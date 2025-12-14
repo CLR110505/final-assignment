@@ -1,0 +1,5584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pacific Ocean Ecosystem Interactive Display</title>
+<style>
+body { font-family: Arial, sans-serif; margin:0; padding:0; background:#0b1d2d; color:#fff; overflow-x: hidden;}
+body.landing-active { overflow-y: hidden; position: fixed; width: 100%;}
+header { text-align:center; padding:2rem; background:#022139;}
+section { padding:2rem; border-bottom:1px solid #333;}
+input[type="range"] { 
+  width: 100%;
+  max-width: 600px;
+  height: 8px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.1);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 1rem 0;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1ca3ec 0%, #125d98 100%);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(28, 163, 236, 0.5);
+  transition: all 0.3s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 4px 12px rgba(28, 163, 236, 0.8);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1ca3ec 0%, #125d98 100%);
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 8px rgba(28, 163, 236, 0.5);
+  transition: all 0.3s ease;
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 4px 12px rgba(28, 163, 236, 0.8);
+}
+#visualization { 
+  position: relative; 
+  min-height: 360px; 
+  margin: 2rem 0; 
+  display: flex; 
+  justify-content: center; 
+  align-items: flex-start; 
+  gap: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.creature-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 320px;
+  justify-content: flex-start;
+}
+
+.impact-card {
+  background: linear-gradient(135deg, rgba(28, 163, 236, 0.2) 0%, rgba(11, 29, 45, 0.7) 100%);
+  border: 2px solid rgba(28, 163, 236, 0.3);
+  border-radius: 20px;
+  padding: 0;
+  margin-bottom: 1.5rem;
+  width: 100%;
+  max-width: 380px;
+  min-height: 320px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.impact-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(28, 163, 236, 0.5);
+  box-shadow: 0 12px 40px rgba(28, 163, 236, 0.2);
+}
+
+#fishCard {
+  background: linear-gradient(135deg, rgba(255, 111, 97, 0.2) 0%, rgba(11, 29, 45, 0.7) 100%);
+  border-color: rgba(255, 111, 97, 0.3);
+}
+
+#fishCard .card-content {
+  background: linear-gradient(to bottom, rgba(11, 29, 45, 0.85) 0%, rgba(11, 29, 45, 0.6) 50%, transparent 100%);
+}
+
+#fishCard:hover {
+  border-color: rgba(255, 111, 97, 0.5);
+  box-shadow: 0 12px 40px rgba(255, 111, 97, 0.2);
+}
+
+.impact-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.impact-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #fff;
+}
+
+.temp-badge {
+  background: linear-gradient(135deg, #1ca3ec 0%, #125d98 100%);
+  color: #fff;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 12px rgba(28, 163, 236, 0.4);
+  transition: all 0.3s ease;
+}
+
+#fishCard .temp-badge {
+  background: linear-gradient(135deg, #ff6f61 0%, #d84315 100%);
+  box-shadow: 0 4px 12px rgba(255, 111, 97, 0.4);
+}
+
+.impact-stats {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.decline-percent {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #ff6f61;
+  line-height: 1;
+  transition: all 0.3s ease;
+}
+
+#fishCard .decline-percent {
+  color: #ff6f61;
+}
+
+.decline-label {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.impact-description {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  min-height: 50px;
+  transition: all 0.4s ease;
+}
+
+.card-background-img {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) scale(1);
+  transform-origin: center bottom;
+  z-index: 1;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease;
+  pointer-events: none;
+  max-width: 350px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.card-content {
+  position: relative;
+  z-index: 2;
+  padding: 1.75rem;
+  background: linear-gradient(to bottom, rgba(11, 29, 45, 0.9) 0%, rgba(11, 29, 45, 0.65) 60%, transparent 100%);
+  border-radius: 20px 20px 0 0;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+#visualization img:hover {
+  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.4));
+}
+/* Depth Scroll Section - Enhanced */
+#scrollDepth {
+  position: relative;
+  min-height: 400vh;
+  background: linear-gradient(180deg, #87ceeb 0%, #1ca3ec 10%, #125d98 30%, #0a324d 60%, #010b16 100%);
+  overflow: hidden;
+  padding: 0;
+}
+
+.depth-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.depth-indicator {
+  position: fixed;
+  top: 50%;
+  right: 40px;
+  transform: translateY(-50%);
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 15px;
+  border-radius: 15px;
+  border: 2px solid rgba(0, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  max-width: 120px;
+}
+
+.depth-indicator.visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(-50%) translateX(0);
+}
+
+.depth-indicator.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-50%) translateX(20px);
+}
+
+.depth-meter {
+  width: 80px;
+  height: 400px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  position: relative;
+  border: 2px solid rgba(0, 255, 255, 0.3);
+  overflow: hidden;
+  margin: 0 auto;
+}
+
+.depth-bar-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0%;
+  background: linear-gradient(180deg, #1ca3ec 0%, #125d98 30%, #0a324d 60%, #010b16 100%);
+  transition: height 0.1s linear;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+}
+
+.depth-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-90deg);
+  color: #00ffff;
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+  white-space: nowrap;
+  z-index: 2;
+}
+
+.depth-zone-label {
+  text-align: center;
+  color: #00ffff;
+  font-size: 0.85rem;
+  margin-top: 15px;
+  font-weight: 500;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+  word-wrap: break-word;
+  word-break: break-word;
+  line-height: 1.3;
+  max-width: 100%;
+}
+
+.ocean-layers {
+  position: relative;
+  width: 100%;
+}
+
+.layer {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transform: translateY(50px);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.layer.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.layer-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 40px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 40px rgba(0, 255, 255, 0.3);
+  max-width: 600px;
+}
+
+.layer-content h3 {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+  color: #fff;
+  text-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+}
+
+.layer-content p {
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.6;
+}
+
+#surfaceLayer {
+  background: linear-gradient(180deg, #87ceeb 0%, #1ca3ec 50%, #125d98 100%);
+}
+
+#midLayer {
+  background: linear-gradient(180deg, #125d98 0%, #0a4d73 50%, #0a324d 100%);
+}
+
+#deepLayer {
+  background: linear-gradient(180deg, #0a324d 0%, #051a2e 50%, #010b16 100%);
+}
+
+#hadalLayer {
+  background: linear-gradient(180deg, #010b16 0%, #000000 100%);
+}
+
+.layer-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: float-particle 8s infinite ease-in-out;
+}
+
+@keyframes float-particle {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-100px) translateX(50px);
+    opacity: 1;
+  }
+}
+
+.light-rays {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 98px,
+    rgba(255, 255, 255, 0.1) 100px,
+    rgba(255, 255, 255, 0.1) 102px
+  );
+  animation: lightShimmer 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes lightShimmer {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+
+.bioluminescent-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(0, 255, 255, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: pulse-glow 3s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 0.8;
+  }
+}
+
+.pressure-waves {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 0, 0, 0.1) 0%, transparent 50%);
+  animation: pressure-pulse 2s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes pressure-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.6;
+  }
+}
+
+.abyss-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(128, 0, 128, 0.4) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: abyss-pulse 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes abyss-pulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0.6;
+  }
+}
+
+.creatures-gallery {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 25px;
+  margin-top: 40px;
+  padding: 20px;
+}
+
+.creature-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: creature-enter 0.8s ease-out backwards;
+}
+
+.creature-item:nth-child(1) { animation-delay: 0.1s; }
+.creature-item:nth-child(2) { animation-delay: 0.2s; }
+.creature-item:nth-child(3) { animation-delay: 0.3s; }
+.creature-item:nth-child(4) { animation-delay: 0.4s; }
+.creature-item:nth-child(5) { animation-delay: 0.5s; }
+
+.creature-image {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 5px 15px rgba(0, 255, 255, 0.3));
+  backdrop-filter: blur(5px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.creature-item:hover .creature-image {
+  transform: translateY(-15px) scale(1.15);
+  filter: drop-shadow(0 10px 30px rgba(0, 255, 255, 0.6));
+  border-color: rgba(0, 255, 255, 0.6);
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.4);
+}
+
+.creature-name {
+  margin-top: 12px;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  text-align: center;
+  font-weight: 500;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease;
+  opacity: 0.8;
+  line-height: 1.4;
+  display: block;
+}
+
+.creature-item:hover .creature-name {
+  opacity: 1;
+  color: #00ffff;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+  transform: translateY(-3px);
+}
+
+/* Special effects for different layers */
+#midLayer .creature-image {
+  filter: drop-shadow(0 5px 15px rgba(0, 255, 0, 0.4));
+  animation: bioluminescent-pulse 3s ease-in-out infinite;
+}
+
+#midLayer .creature-item:hover .creature-image {
+  filter: drop-shadow(0 10px 30px rgba(0, 255, 0, 0.8));
+  box-shadow: 0 0 40px rgba(0, 255, 0, 0.6);
+}
+
+#deepLayer .creature-image {
+  filter: drop-shadow(0 5px 15px rgba(128, 0, 128, 0.4));
+}
+
+#deepLayer .creature-item:hover .creature-image {
+  filter: drop-shadow(0 10px 30px rgba(128, 0, 128, 0.8));
+  box-shadow: 0 0 40px rgba(128, 0, 128, 0.6);
+}
+
+#hadalLayer .creature-image {
+  filter: drop-shadow(0 5px 15px rgba(0, 0, 255, 0.3));
+  opacity: 0.9;
+}
+
+#hadalLayer .creature-item:hover .creature-image {
+  filter: drop-shadow(0 10px 30px rgba(0, 0, 255, 0.7));
+  box-shadow: 0 0 40px rgba(0, 0, 255, 0.5);
+  opacity: 1;
+}
+
+@keyframes creature-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes bioluminescent-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 5px 15px rgba(0, 255, 0, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 8px 25px rgba(0, 255, 0, 0.7));
+  }
+}
+
+.scroll-hint {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  color: rgba(255, 255, 255, 0.8);
+  z-index: 50;
+  animation: hint-bounce 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.scroll-hint.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.scroll-arrow {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  animation: arrow-bounce 1.5s ease-in-out infinite;
+}
+
+@keyframes arrow-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(10px);
+  }
+}
+
+@keyframes hint-bounce {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .depth-indicator {
+    right: 20px;
+    padding: 12px;
+    max-width: 100px;
+  }
+  
+  .depth-meter {
+    width: 60px;
+    height: 300px;
+  }
+  
+  .depth-label {
+    font-size: 1rem;
+  }
+  
+  .depth-zone-label {
+    font-size: 0.75rem;
+    margin-top: 10px;
+    word-wrap: break-word;
+    word-break: break-word;
+    line-height: 1.2;
+  }
+  
+  .layer-content {
+    padding: 30px 20px;
+    max-width: 90%;
+  }
+  
+  .layer-content h3 {
+    font-size: 1.8rem;
+  }
+  
+  .layer-content p {
+    font-size: 1rem;
+  }
+  
+  .creatures-gallery {
+    gap: 15px;
+    margin-top: 25px;
+    padding: 15px;
+  }
+  
+  .creature-image {
+    width: 90px;
+    height: 90px;
+    padding: 8px;
+  }
+  
+  .creature-name {
+    font-size: 0.85rem;
+    margin-top: 8px;
+  }
+  
+  .scroll-hint {
+    bottom: 20px;
+    font-size: 0.9rem;
+  }
+  
+  .scroll-arrow {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .depth-indicator {
+    right: 10px;
+    padding: 8px;
+    max-width: 90px;
+  }
+  
+  .depth-meter {
+    width: 50px;
+    height: 250px;
+  }
+  
+  .depth-label {
+    font-size: 0.9rem;
+  }
+  
+  .depth-zone-label {
+    font-size: 0.7rem;
+    word-wrap: break-word;
+    word-break: break-word;
+    line-height: 1.2;
+  }
+  
+  .layer-content h3 {
+    font-size: 1.5rem;
+  }
+  
+  .layer-content p {
+    font-size: 0.9rem;
+  }
+  
+  .creatures-gallery {
+    gap: 12px;
+    margin-top: 20px;
+    padding: 10px;
+  }
+  
+  .creature-image {
+    width: 70px;
+    height: 70px;
+    padding: 6px;
+  }
+  
+  .creature-name {
+    font-size: 0.75rem;
+    margin-top: 6px;
+  }
+}
+
+/* Landing Page Styles */
+#landing-page {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: opacity 1s ease-out, visibility 1s;
+}
+
+#landing-page.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+#landing-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
+}
+
+.landing-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(11, 29, 45, 0.4);
+  z-index: 0;
+}
+
+.landing-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 2rem;
+}
+
+.landing-title {
+  font-size: 3.5rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+  animation: fadeInUp 1s ease-out;
+}
+
+.landing-button {
+  padding: 1rem 2.5rem;
+  font-size: 1.2rem;
+  background: #1ca3ec;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(28, 163, 236, 0.4);
+  animation: fadeInUp 1s ease-out 0.3s both;
+}
+
+.landing-button:hover {
+  background: #125d98;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(28, 163, 236, 0.6);
+}
+
+.landing-button:active {
+  transform: translateY(-1px);
+}
+
+#main-content {
+  opacity: 0;
+  transition: opacity 1s ease-in;
+}
+
+#main-content.show {
+  opacity: 1;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+/* Creature Statistics Modal */
+.creature-modal {
+  display: none;
+  position: fixed;
+  z-index: 2000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(5px);
+  animation: fadeIn 0.3s ease;
+}
+
+.creature-modal.show {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.creature-modal-content {
+  background: linear-gradient(135deg, rgba(11, 29, 45, 0.95) 0%, rgba(0, 52, 102, 0.95) 100%);
+  margin: auto;
+  padding: 0;
+  border: 2px solid rgba(0, 255, 255, 0.4);
+  border-radius: 20px;
+  width: 95%;
+  max-width: 900px;
+  max-height: 95vh;
+  overflow-y: auto;
+  box-shadow: 0 0 50px rgba(0, 255, 255, 0.3), 
+              0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: slideIn 0.4s ease;
+  position: relative;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.creature-modal-close {
+  position: absolute;
+  right: 20px;
+  top: 15px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 32px;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s ease;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.creature-modal-close:hover,
+.creature-modal-close:focus {
+  color: #00ffff;
+  transform: rotate(90deg);
+  background: rgba(0, 255, 255, 0.2);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+}
+
+.creature-modal-header {
+  padding: 30px 30px 20px 30px;
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.1) 0%, rgba(0, 100, 150, 0.1) 100%);
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+  border-radius: 20px 20px 0 0;
+}
+
+.creature-modal-header h2 {
+  margin: 0 0 10px 0;
+  color: #00ffff;
+  font-size: 1.8rem;
+  text-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+  font-weight: 600;
+}
+
+.creature-modal-header p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+  font-size: 1rem;
+}
+
+.creature-modal-body {
+  padding: 25px 30px 30px 30px;
+}
+
+.creature-stat-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.creature-stat-item {
+  background: rgba(0, 255, 255, 0.05);
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  border-radius: 10px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.creature-stat-item:hover {
+  background: rgba(0, 255, 255, 0.1);
+  border-color: rgba(0, 255, 255, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 255, 255, 0.2);
+}
+
+.stat-label {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.stat-value {
+  color: #00ffff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+.creature-description,
+.creature-facts {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.creature-description h3,
+.creature-facts h3 {
+  color: #00ffff;
+  margin: 0 0 15px 0;
+  font-size: 1.2rem;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
+}
+
+.creature-description p {
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.7;
+  margin: 0;
+  font-size: 1rem;
+}
+
+.creature-facts ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.creature-facts li {
+  color: rgba(255, 255, 255, 0.9);
+  padding: 10px 0 10px 25px;
+  position: relative;
+  line-height: 1.6;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.1);
+}
+
+.creature-facts li:last-child {
+  border-bottom: none;
+}
+
+.creature-facts li::before {
+  content: "•";
+  color: #00ffff;
+  font-size: 1.5rem;
+  position: absolute;
+  left: 0;
+  top: 5px;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.creature-charts {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.creature-charts h3 {
+  color: #00ffff;
+  margin: 0 0 20px 0;
+  font-size: 1.2rem;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
+}
+
+#creatureChartContainer {
+  min-height: 450px;
+  height: 450px;
+  background: rgba(0, 255, 255, 0.03);
+  border-radius: 10px;
+  padding: 20px;
+  border: 1px solid rgba(0, 255, 255, 0.1);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.creature-chart {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.creature-chart svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.chart-title {
+  fill: #00ffff;
+  font-size: 16px;
+  font-weight: 600;
+  text-anchor: middle;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.chart-axis {
+  stroke: rgba(0, 255, 255, 0.5);
+  stroke-width: 1.5;
+}
+
+.chart-axis-label {
+  fill: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.chart-grid {
+  stroke: rgba(0, 255, 255, 0.1);
+  stroke-width: 1;
+  stroke-dasharray: 2,2;
+}
+
+.chart-tooltip {
+  position: absolute;
+  background: rgba(11, 29, 45, 0.95);
+  border: 1px solid rgba(0, 255, 255, 0.4);
+  border-radius: 5px;
+  padding: 8px 12px;
+  color: #00ffff;
+  font-size: 12px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+  z-index: 10000;
+}
+
+.chart-tooltip.show {
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .creature-modal-content {
+    width: 98%;
+    max-width: 98%;
+    max-height: 95vh;
+  }
+  
+  .creature-modal-header {
+    padding: 25px 25px 15px 25px;
+  }
+  
+  .creature-modal-header h2 {
+    font-size: 1.5rem;
+    padding-right: 40px;
+  }
+  
+  .creature-modal-body {
+    padding: 20px 25px 25px 25px;
+  }
+  
+  .creature-stat-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .creature-modal-close {
+    right: 15px;
+    top: 12px;
+    font-size: 28px;
+  }
+  
+  #creatureChartContainer {
+    min-height: 400px;
+    height: 400px;
+    padding: 15px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .creature-modal-content {
+    max-width: 850px;
+  }
+  
+  #creatureChartContainer {
+    min-height: 420px;
+    height: 420px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .creature-modal-content {
+    max-width: 950px;
+  }
+  
+  #creatureChartContainer {
+    min-height: 480px;
+    height: 480px;
+  }
+}
+
+/* Unified Interactive Table Styles */
+
+/* Ocean Exploration Game Section - Enhanced Styles */
+#oceanGameSection {
+  position: relative;
+  padding: 4rem 2rem;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #001122 0%, #003366 30%, #004488 60%, #001122 100%);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Animated Ocean Background */
+#oceanGameSection::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(0, 150, 255, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 40% 20%, rgba(100, 200, 255, 0.1) 0%, transparent 50%);
+  animation: oceanFlow 15s ease-in-out infinite;
+  z-index: 0;
+}
+
+#oceanGameSection::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 255, 0.03) 2px, rgba(0, 255, 255, 0.03) 4px),
+    repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0, 200, 255, 0.03) 2px, rgba(0, 200, 255, 0.03) 4px);
+  animation: wavePattern 20s linear infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+
+@keyframes oceanFlow {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(-20px) scale(1.05);
+    opacity: 1;
+  }
+}
+
+@keyframes wavePattern {
+  0% {
+    transform: translateX(0) translateY(0);
+  }
+  100% {
+    transform: translateX(50px) translateY(30px);
+  }
+}
+
+#oceanGameSection h2 {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: #fff;
+  text-shadow: 
+    0 0 20px rgba(0, 255, 255, 0.8),
+    0 0 40px rgba(0, 200, 255, 0.5),
+    0 4px 8px rgba(0, 0, 0, 0.5);
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(135deg, #00ffff 0%, #00aaff 50%, #0088ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: titleShimmer 3s ease-in-out infinite;
+}
+
+@keyframes titleShimmer {
+  0%, 100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.3);
+  }
+}
+
+.game-container {
+  position: relative;
+  z-index: 1;
+  max-width: 1400px;
+  width: 100%;
+  background: linear-gradient(135deg, rgba(0, 30, 60, 0.85) 0%, rgba(0, 50, 100, 0.75) 100%);
+  border-radius: 30px;
+  padding: 2.5rem;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.5),
+    0 0 80px rgba(0, 255, 255, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+  border: 2px solid rgba(0, 255, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.game-container:hover {
+  box-shadow: 
+    0 25px 70px rgba(0, 0, 0, 0.6),
+    0 0 100px rgba(0, 255, 255, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border-color: rgba(0, 255, 255, 0.5);
+}
+
+.game-info {
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.score-display {
+  display: flex;
+  justify-content: space-around;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(0, 50, 100, 0.6) 0%, rgba(0, 30, 60, 0.6) 100%);
+  border-radius: 20px;
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.score-display span {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 
+    0 0 10px rgba(255, 215, 0, 0.8),
+    0 2px 4px rgba(0, 0, 0, 0.5);
+  padding: 0.5rem 1.5rem;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 180, 0, 0.2) 100%);
+  border-radius: 15px;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.score-display span:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(255, 180, 0, 0.3) 100%);
+}
+
+.game-status {
+  color: #00ffff;
+  font-size: 1.3rem;
+  font-weight: 600;
+  text-align: center;
+  margin: 1.5rem 0;
+  min-height: 2rem;
+  text-shadow: 0 0 15px rgba(0, 255, 255, 0.8);
+  padding: 0.75rem;
+  background: rgba(0, 255, 255, 0.1);
+  border-radius: 10px;
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.game-status.game-over {
+  color: #ff6b6b;
+  text-shadow: 0 0 20px rgba(255, 107, 107, 0.9);
+  background: rgba(255, 107, 107, 0.15);
+  border-color: rgba(255, 107, 107, 0.4);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Control Selection Styles */
+.control-selection {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2000;
+  background: linear-gradient(135deg, rgba(0, 30, 60, 0.98) 0%, rgba(0, 50, 100, 0.98) 100%);
+  padding: 3rem;
+  border-radius: 30px;
+  box-shadow: 
+    0 30px 80px rgba(0, 0, 0, 0.7),
+    0 0 100px rgba(0, 255, 255, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(20px);
+  border: 2px solid rgba(0, 255, 255, 0.4);
+  text-align: center;
+  animation: modalFadeIn 0.4s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.control-selection h3 {
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  color: #fff;
+  text-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
+  background: linear-gradient(135deg, #00ffff 0%, #00aaff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.control-options {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.control-btn {
+  position: relative;
+  padding: 1.5rem 3rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #00aaff 0%, #0088ff 50%, #0066cc 100%);
+  border: 2px solid rgba(0, 255, 255, 0.5);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 8px 24px rgba(0, 170, 255, 0.4),
+    0 0 30px rgba(0, 255, 255, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 200px;
+  overflow: hidden;
+}
+
+.control-btn::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.control-btn:hover::before {
+  opacity: 1;
+  animation: shimmer 1s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.control-btn:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 
+    0 12px 32px rgba(0, 170, 255, 0.6),
+    0 0 40px rgba(0, 255, 255, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  background: linear-gradient(135deg, #00ccff 0%, #00aaff 50%, #0088ff 100%);
+  border-color: rgba(0, 255, 255, 0.8);
+}
+
+.control-btn:active {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 6px 20px rgba(0, 170, 255, 0.5),
+    0 0 30px rgba(0, 255, 255, 0.4);
+}
+
+.btn-icon {
+  font-size: 2.5rem;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+  transition: transform 0.3s ease;
+}
+
+.control-btn:hover .btn-icon {
+  transform: scale(1.2) rotate(5deg);
+}
+
+.btn-text {
+  letter-spacing: 1px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  font-size: 1.1rem;
+}
+
+/* Canvas Styles */
+#oceanGameCanvas {
+  width: 100%;
+  max-width: 1200px;
+  height: auto;
+  border: 3px solid rgba(0, 255, 255, 0.5);
+  border-radius: 20px;
+  background: linear-gradient(180deg, #001a33 0%, #002244 50%, #001122 100%);
+  box-shadow: 
+    0 0 40px rgba(0, 255, 255, 0.4),
+    0 20px 60px rgba(0, 0, 0, 0.5),
+    inset 0 0 30px rgba(0, 255, 255, 0.1);
+  cursor: none;
+  display: block;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+#oceanGameCanvas:hover {
+  box-shadow: 
+    0 0 60px rgba(0, 255, 255, 0.6),
+    0 25px 70px rgba(0, 0, 0, 0.6),
+    inset 0 0 40px rgba(0, 255, 255, 0.15);
+  border-color: rgba(0, 255, 255, 0.7);
+}
+
+/* Canvas Wrapper */
+.canvas-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+/* Game Overlay - Only covers canvas */
+.game-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 10;
+  animation: fadeInOverlay 0.4s ease-out;
+  backdrop-filter: blur(2px);
+  border-radius: 20px;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+@keyframes fadeInOverlay {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(2px);
+  }
+}
+
+/* Restart Button Overlay - Only covers canvas */
+.restart-button-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 11;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  cursor: pointer;
+  animation: fadeInRestart 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes fadeInRestart {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.restart-content {
+  background: linear-gradient(135deg, rgba(0, 30, 60, 0.95) 0%, rgba(0, 50, 100, 0.95) 100%);
+  padding: 3rem 4rem;
+  border-radius: 25px;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.6),
+    0 0 80px rgba(0, 255, 255, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(15px);
+  border: 2px solid rgba(0, 255, 255, 0.4);
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: floatRestart 3s ease-in-out infinite;
+  max-width: 90%;
+}
+
+@keyframes floatRestart {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.restart-content:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 
+    0 25px 70px rgba(0, 0, 0, 0.7),
+    0 0 100px rgba(0, 255, 255, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  border-color: rgba(0, 255, 255, 0.6);
+}
+
+.restart-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: rotateIcon 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px rgba(0, 255, 255, 0.8));
+}
+
+@keyframes rotateIcon {
+  0%, 100% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.1);
+  }
+}
+
+.restart-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.75rem;
+  text-shadow: 
+    0 0 20px rgba(255, 107, 107, 0.8),
+    0 4px 8px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.restart-message {
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  letter-spacing: 0.5px;
+  margin-top: 0.5rem;
+}
+
+/* Landing Button Enhancement */
+.landing-button {
+  padding: 1.25rem 3rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #00aaff 0%, #0088ff 50%, #0066cc 100%);
+  color: #fff;
+  border: 2px solid rgba(0, 255, 255, 0.5);
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 8px 24px rgba(0, 170, 255, 0.5),
+    0 0 40px rgba(0, 255, 255, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 1s ease-out 0.3s both;
+}
+
+.landing-button::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.landing-button:hover::before {
+  opacity: 1;
+  animation: shimmer 1s ease-in-out infinite;
+}
+
+.landing-button:hover {
+  background: linear-gradient(135deg, #00ccff 0%, #00aaff 50%, #0088ff 100%);
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 
+    0 12px 32px rgba(0, 170, 255, 0.7),
+    0 0 60px rgba(0, 255, 255, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  border-color: rgba(0, 255, 255, 0.8);
+}
+
+.landing-button:active {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 6px 20px rgba(0, 170, 255, 0.6),
+    0 0 40px rgba(0, 255, 255, 0.5);
+}
+
+/* Custom Cursor Enhancement */
+.custom-cursor {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: radial-gradient(circle, #ff0000 0%, #cc0000 100%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1000;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.2s ease;
+  box-shadow: 
+    0 0 12px rgba(255, 0, 0, 0.9),
+    0 0 24px rgba(255, 0, 0, 0.6),
+    0 0 36px rgba(255, 0, 0, 0.3);
+  top: 0;
+  left: 0;
+  opacity: 0;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  #oceanGameSection h2 {
+    font-size: 2.5rem;
+  }
+  
+  .game-container {
+    padding: 1.5rem;
+    border-radius: 20px;
+  }
+  
+  .score-display {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  
+  .score-display span {
+    font-size: 1.2rem;
+    padding: 0.5rem 1rem;
+  }
+  
+  .control-options {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .control-btn {
+    min-width: 100%;
+    padding: 1.25rem 2rem;
+  }
+  
+  .control-selection {
+    padding: 2rem;
+    width: 90%;
+    max-width: 400px;
+  }
+  
+  .control-selection h3 {
+    font-size: 1.5rem;
+  }
+  
+  #oceanGameCanvas {
+    max-width: 100%;
+  }
+  
+  .restart-content {
+    padding: 2rem 2.5rem;
+  }
+  
+  .restart-icon {
+    font-size: 3rem;
+  }
+  
+  .restart-title {
+    font-size: 2rem;
+  }
+  
+  .restart-message {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  #oceanGameSection {
+    padding: 2rem 1rem;
+  }
+  
+  #oceanGameSection h2 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .game-container {
+    padding: 1rem;
+  }
+  
+  .score-display span {
+    font-size: 1rem;
+  }
+  
+  .control-btn {
+    font-size: 1rem;
+    padding: 1rem 1.5rem;
+  }
+  
+  .btn-icon {
+    font-size: 2rem;
+  }
+  
+  .restart-content {
+    padding: 1.5rem 2rem;
+  }
+  
+  .restart-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .restart-title {
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .restart-message {
+    font-size: 1rem;
+  }
+}
+</style>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+</head>
+<body>
+
+<!-- Landing Page -->
+<div id="landing-page">
+  <video id="landing-video" autoplay muted loop playsinline>
+    <source src="assets/ocean-background.mp4" type="video/mp4">
+  </video>
+  <div class="landing-overlay"></div>
+  <div class="landing-content">
+    <h1 class="landing-title">Welcome to the Ocean Life Gallery</h1>
+    <button class="landing-button" id="dive-button">Dive Deep with Me</button>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div id="main-content">
+<header><h1>Pacific Ocean Ecosystem Interactive Display</h1></header>
+
+<section id="coralFishSim">
+  <h2>Temperature Rise Simulation</h2>
+  <label for="tempSlider">Temperature Rise (°C): </label>
+  <input type="range" id="tempSlider" min="0" max="5" step="0.1" value="0">
+  <p>Temperature Rise: <span id="tempValue">0</span>°C</p>
+  <div id="visualization">
+    <div class="creature-container">
+      <div class="impact-card" id="coralCard">
+        <img id="coralImg" src="assets/coral.png" alt="Coral" class="card-background-img">
+        <div class="card-content">
+          <div class="impact-header">
+            <span class="temp-badge" id="coralTempBadge">0°C</span>
+            <h3>Coral Coverage</h3>
+          </div>
+          <div class="impact-stats">
+            <span class="decline-percent" id="coralLoss">0%</span>
+            <span class="decline-label">Decline</span>
+          </div>
+          <p class="impact-description" id="coralDescription">Normal Conditions - Healthy Coral Reef Ecosystem</p>
+        </div>
+      </div>
+    </div>
+    <div class="creature-container">
+      <div class="impact-card" id="fishCard">
+        <img id="fishImg" src="assets/fish.png" alt="Fish" class="card-background-img">
+        <div class="card-content">
+          <div class="impact-header">
+            <span class="temp-badge" id="fishTempBadge">0°C</span>
+            <h3>Fish Abundance</h3>
+          </div>
+          <div class="impact-stats">
+            <span class="decline-percent" id="fishLoss">0%</span>
+            <span class="decline-label">Decline</span>
+          </div>
+          <p class="impact-description" id="fishDescription">Healthy Coral Reef Habitat - Rich Marine Biodiversity</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="scrollDepth">
+  <div class="depth-container">
+    <div class="depth-indicator">
+      <div class="depth-meter">
+        <div class="depth-bar-fill" id="depthBarFill"></div>
+        <div class="depth-label" id="depthLabel">0 m</div>
+      </div>
+      <div class="depth-zone-label" id="depthZoneLabel">Surface</div>
+    </div>
+    
+    <div class="ocean-layers">
+      <div class="layer" id="surfaceLayer">
+        <div class="layer-content">
+          <h3>Epipelagic Zone (0-200m)</h3>
+          <p>Abundant sunlight, highest biodiversity</p>
+          <div class="layer-particles" id="surfaceParticles"></div>
+          <div class="creatures-gallery">
+            <div class="creature-item" data-name="Oceanic Whitetip Shark">
+              <img src="assets/Whitetip Shark.png" alt="Oceanic Whitetip Shark" class="creature-image">
+              <span class="creature-name">Oceanic Whitetip Shark</span>
+            </div>
+            <div class="creature-item" data-name="Giant Oceanic Manta Ray">
+              <img src="assets/Giant Oceanic Manta Ray.png" alt="Giant Oceanic Manta Ray" class="creature-image">
+              <span class="creature-name">Giant Oceanic Manta Ray</span>
+            </div>
+            <div class="creature-item" data-name="Reef-Building Coral">
+              <img src="assets/Reef-Building Coral.png" alt="Reef-Building Coral" class="creature-image">
+              <span class="creature-name">Reef-Building Coral</span>
+            </div>
+          </div>
+        </div>
+        <div class="light-rays"></div>
+      </div>
+      
+      <div class="layer" id="midLayer">
+        <div class="layer-content">
+          <h3>Mesopelagic Zone (200-1000m)</h3>
+          <p>Twilight zone with bioluminescent phenomena</p>
+          <div class="layer-particles" id="midParticles"></div>
+          <div class="creatures-gallery">
+            <div class="creature-item" data-name="Devil Ray">
+              <img src="assets/Devil Ray.png" alt="Devil Ray" class="creature-image">
+              <span class="creature-name">Devil Ray</span>
+            </div>
+            <div class="creature-item" data-name="Deepwater Shark">
+              <img src="assets/Deepwater Shark.png" alt="Deepwater Shark" class="creature-image">
+              <span class="creature-name">Deepwater Shark</span>
+            </div>
+            <div class="creature-item" data-name="Deepwater Seahorse">
+              <img src="assets/Deepwater Seahorse.png" alt="Deepwater Seahorse" class="creature-image">
+              <span class="creature-name">Deepwater Seahorse</span>
+            </div>
+          </div>
+          <div class="bioluminescent-glow"></div>
+        </div>
+      </div>
+      
+      <div class="layer" id="deepLayer">
+        <div class="layer-content">
+          <h3>Bathypelagic Zone (1000-4000m)</h3>
+          <p>Complete darkness, extreme pressure</p>
+          <div class="layer-particles" id="deepParticles"></div>
+          <div class="creatures-gallery">
+            <div class="creature-item" data-name="Scaly-foot Snail">
+              <img src="assets/Scaly-foot Snail.png" alt="Scaly-foot Snail" class="creature-image">
+              <span class="creature-name">Scaly-foot Snail</span>
+            </div>
+            <div class="creature-item" data-name="Hydrothermal Vent Mollusc">
+              <img src="assets/Hydrothermal Vent Mollusc.png" alt="Hydrothermal Vent Mollusc" class="creature-image">
+              <span class="creature-name">Hydrothermal Vent Mollusc</span>
+            </div>
+            <div class="creature-item" data-name="Deep-sea Crustacean">
+              <img src="assets/Deep-sea Crustacean.png" alt="Deep-sea Crustacean" class="creature-image">
+              <span class="creature-name">Deep-sea Crustacean</span>
+            </div>
+          </div>
+          <div class="pressure-waves"></div>
+        </div>
+      </div>
+      
+      <div class="layer" id="hadalLayer">
+        <div class="layer-content">
+          <h3>Hadal Zone (4000-11000m)</h3>
+          <p>Deepest trenches, life at the limit</p>
+          <div class="layer-particles" id="hadalParticles"></div>
+          <div class="creatures-gallery">
+            <div class="creature-item" data-name="Endemic Hydrothermal Vent Shrimp">
+              <img src="assets/Endemic Hydrothermal Vent Shrimp.png" alt="Endemic Hydrothermal Vent Shrimp" class="creature-image">
+              <span class="creature-name">Endemic Hydrothermal Vent Shrimp</span>
+            </div>
+            <div class="creature-item" data-name="Hadal Snailfish">
+              <img src="assets/Hadal Snailfish.png" alt="Hadal Snailfish" class="creature-image">
+              <span class="creature-name">Hadal Snailfish</span>
+            </div>
+            <div class="creature-item" data-name="Hadal Microbial Community">
+              <img src="assets/Hadal Microbial Colony.png" alt="Hadal Microbial Community" class="creature-image">
+              <span class="creature-name">Hadal Microbial Community</span>
+            </div>
+          </div>
+          <div class="abyss-glow"></div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</section>
+
+<!-- Creature Statistics Modal -->
+<div id="creatureModal" class="creature-modal">
+  <div class="creature-modal-content">
+    <span class="creature-modal-close">&times;</span>
+    <div class="creature-modal-header">
+      <h2 id="modalCreatureName"></h2>
+      <p id="modalCreatureScientific"></p>
+    </div>
+    <div class="creature-modal-body">
+      <div class="creature-stat-row">
+        <div class="creature-stat-item">
+          <span class="stat-label">Depth Range</span>
+          <span class="stat-value" id="modalDepth"></span>
+        </div>
+        <div class="creature-stat-item">
+          <span class="stat-label">Size</span>
+          <span class="stat-value" id="modalSize"></span>
+        </div>
+      </div>
+      <div class="creature-stat-row">
+        <div class="creature-stat-item">
+          <span class="stat-label">Diet</span>
+          <span class="stat-value" id="modalDiet"></span>
+        </div>
+        <div class="creature-stat-item">
+          <span class="stat-label">Conservation Status</span>
+          <span class="stat-value" id="modalStatus"></span>
+        </div>
+      </div>
+      <div class="creature-description">
+        <h3>Description</h3>
+        <p id="modalDescription"></p>
+      </div>
+      <div class="creature-facts">
+        <h3>Interesting Facts</h3>
+        <ul id="modalFacts"></ul>
+      </div>
+      <div class="creature-charts">
+        <div id="creatureChartContainer"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section id="oceanGameSection">
+  <h2>Ocean Exploration Game</h2>
+  <div class="game-container">
+    <div class="game-info">
+      <div class="score-display">
+        <span>Score: <span id="gameScore">0</span></span>
+        <span>High Score: <span id="highScore">0</span></span>
+      </div>
+      <div id="gameStatus" class="game-status"></div>
+      <div id="controlSelection" class="control-selection">
+        <h3>Please Select Control Method</h3>
+        <div class="control-options">
+          <button id="mouseControlBtn" class="control-btn">
+            <span class="btn-icon">🖱️</span>
+            <span class="btn-text">Mouse Control</span>
+          </button>
+          <button id="keyboardControlBtn" class="control-btn">
+            <span class="btn-icon">⌨️</span>
+            <span class="btn-text">Arrow Keys Control</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="canvas-wrapper">
+      <canvas id="oceanGameCanvas" width="1200" height="600"></canvas>
+      <div id="customCursor" class="custom-cursor"></div>
+      <div id="gameOverlay" class="game-overlay" style="display:none;"></div>
+      <div id="restartGameBtn" class="restart-button-overlay" style="display:none;">
+        <div class="restart-content">
+          <div class="restart-icon">🔄</div>
+          <div class="restart-title">Game Over</div>
+          <div class="restart-message">Click to restart</div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</section>
+</div>
+
+<script>
+// ==========================
+// Landing Page Transition
+// ==========================
+const landingPage = document.getElementById("landing-page");
+const mainContent = document.getElementById("main-content");
+const diveButton = document.getElementById("dive-button");
+const landingVideo = document.getElementById("landing-video");
+
+// Disable scrolling on landing page
+document.body.classList.add("landing-active");
+window.scrollTo(0, 0);
+
+// Prevent scrolling while landing page is visible
+document.addEventListener("wheel", function(e) {
+  if (document.body.classList.contains("landing-active")) {
+    e.preventDefault();
+  }
+}, { passive: false });
+
+document.addEventListener("touchmove", function(e) {
+  if (document.body.classList.contains("landing-active")) {
+    e.preventDefault();
+  }
+}, { passive: false });
+
+diveButton.addEventListener("click", function() {
+  // Reset scroll position to top
+  window.scrollTo(0, 0);
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+  
+  landingPage.classList.add("hidden");
+  setTimeout(function() {
+    mainContent.classList.add("show");
+    landingPage.style.display = "none";
+    // Re-enable scrolling
+    document.body.classList.remove("landing-active");
+    // Ensure we're at the top
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, 1000);
+});
+
+// Handle video loading errors
+landingVideo.addEventListener("error", function() {
+  console.log("Video failed to load, using fallback background");
+  landingVideo.style.display = "none";
+});
+
+// Resume video on user interaction (required by some browsers)
+document.addEventListener("click", function() {
+  if (landingVideo && landingVideo.paused) {
+    landingVideo.play().catch(function() {
+      // Silently handle autoplay failure
+    });
+  }
+}, { once: true });
+
+// ==========================
+// Temperature Rise Simulation + Visualization
+// ==========================
+const tempSlider = document.getElementById("tempSlider"),
+      tempValue = document.getElementById("tempValue"),
+      coralLoss = document.getElementById("coralLoss"),
+      fishLoss = document.getElementById("fishLoss"),
+      coralImg = document.getElementById("coralImg"),
+      fishImg = document.getElementById("fishImg");
+
+// Coral coverage data (based on temperature rise)
+const coralData = [
+  {temp: 0, decline: 0},
+  {temp: 1, decline: 25},  // Average of 20-30%
+  {temp: 2, decline: 50},  // Average of 40-60%
+  {temp: 3, decline: 75},  // Average of 70-80%
+  {temp: 4, decline: 90},  // Average of 85-95%
+  {temp: 5, decline: 97}   // >95%
+];
+
+// Fish abundance data (based on temperature rise)
+const fishData = [
+  {temp: 0, decline: 0},
+  {temp: 1, decline: 15},  // Average of 10-20%
+  {temp: 2, decline: 35},  // Average of 30-40%
+  {temp: 3, decline: 55},  // Average of 50-60%
+  {temp: 4, decline: 75},  // Average of 70-80%
+  {temp: 5, decline: 85}   // 80-90%+
+];
+
+// Coral impact description data
+const coralImpactData = [
+  {
+    tempRange: "0°C",
+    description: "Normal Conditions - Healthy Coral Reef Ecosystem",
+    detail: "Coral reefs are in optimal condition with rich biodiversity"
+  },
+  {
+    tempRange: "+1°C",
+    description: "Increased Thermal Stress and Bleaching Risk",
+    detail: "1–2°C above summer maximum temperature may trigger bleaching and mortality."
+  },
+  {
+    tempRange: "+2°C",
+    description: "Frequent Large-Scale Bleaching Events",
+    detail: "Bleaching events become common, coral coverage significantly declines."
+  },
+  {
+    tempRange: "+3°C",
+    description: "Severe Long-Term Coral Reef Degradation",
+    detail: "Many coral reefs may not recover, ecosystems severely damaged."
+  },
+  {
+    tempRange: "+4°C",
+    description: "Coral Reef Structure Near Complete Collapse",
+    detail: "Most coral reefs lose structural integrity, ecosystem function largely lost"
+  },
+  {
+    tempRange: "+5°C",
+    description: "Functional Ecosystem Loss",
+    detail: "Coral reef ecosystem function completely lost in most areas"
+  }
+];
+
+// Fish impact description data
+const fishImpactData = [
+  {
+    tempRange: "0°C",
+    description: "Healthy Coral Reef Habitat",
+    detail: "Rich marine biodiversity, healthy fish populations"
+  },
+  {
+    tempRange: "+1°C",
+    description: "Initial Loss of Specialized/Sensitive Species",
+    detail: "Habitat begins to degrade, some species start to be affected."
+  },
+  {
+    tempRange: "+2°C",
+    description: "Habitat Structure Deterioration",
+    detail: "Many species abundance declines, ecosystem stability reduced."
+  },
+  {
+    tempRange: "+3°C",
+    description: "Major Biodiversity Loss",
+    detail: "Many coral reef fish groups suffer significant losses, species composition changes"
+  },
+  {
+    tempRange: "+4°C",
+    description: "Only Most Adaptive Species Remain",
+    detail: "Most reef-dependent fish disappear, ecosystem severely simplified"
+  },
+  {
+    tempRange: "+5°C",
+    description: "Major Community Collapse",
+    detail: "Most reef-dependent fish disappear, ecosystem function largely lost"
+  }
+];
+
+// Get data for current temperature range
+function getCurrentTempRange(temp) {
+  if (temp < 0.5) return 0;
+  if (temp < 1.5) return 1;
+  if (temp < 2.5) return 2;
+  if (temp < 3.5) return 3;
+  if (temp < 4.5) return 4;
+  return 5;
+}
+
+// Interpolation function
+function interpolateValue(temp, dataArray) {
+  if (temp <= 0) return dataArray[0].decline;
+  if (temp >= 5) return dataArray[5].decline;
+  
+  const lowerIndex = Math.floor(temp);
+  const upperIndex = Math.ceil(temp);
+  const lower = dataArray[lowerIndex];
+  const upper = dataArray[upperIndex];
+  
+  if (lowerIndex === upperIndex) return lower.decline;
+  
+  const ratio = (temp - lower.temp) / (upper.temp - lower.temp);
+  return lower.decline + (upper.decline - lower.decline) * ratio;
+}
+
+// Update impact card display
+function updateImpactCards(temp) {
+  const tempRange = getCurrentTempRange(temp);
+  const coralImpact = coralImpactData[tempRange];
+  const fishImpact = fishImpactData[tempRange];
+  
+  // Update coral card
+  document.getElementById("coralTempBadge").textContent = coralImpact.tempRange;
+  document.getElementById("coralDescription").textContent = coralImpact.description;
+  document.getElementById("coralDescription").title = coralImpact.detail;
+  
+  // Update fish card
+  document.getElementById("fishTempBadge").textContent = fishImpact.tempRange;
+  document.getElementById("fishDescription").textContent = fishImpact.description;
+  document.getElementById("fishDescription").title = fishImpact.detail;
+  
+  // Add animation effect
+  const coralCard = document.getElementById("coralCard");
+  const fishCard = document.getElementById("fishCard");
+  coralCard.style.animation = "none";
+  fishCard.style.animation = "none";
+  setTimeout(() => {
+    coralCard.style.animation = "pulse 0.5s ease";
+    fishCard.style.animation = "pulse 0.5s ease";
+  }, 10);
+}
+
+tempSlider.addEventListener("input", function(){
+  const temp = parseFloat(this.value);
+  tempValue.textContent = temp.toFixed(1);
+  
+  // Calculate percentage
+  const coralPercent = interpolateValue(temp, coralData).toFixed(1);
+  const fishPercent = interpolateValue(temp, fishData).toFixed(1);
+  
+  // Update percentage display
+  coralLoss.textContent = coralPercent + '%';
+  fishLoss.textContent = fishPercent + '%';
+  
+  // Update visual effects
+  const coralScale = Math.max(0.3, 1 - coralPercent/100);
+  const fishScale = Math.max(0.3, 1 - fishPercent/100);
+  coralImg.style.transform = `translateX(-50%) scale(${coralScale})`;
+  coralImg.style.opacity = Math.max(0.4, coralScale);
+  fishImg.style.transform = `translateX(-50%) scale(${fishScale})`;
+  fishImg.style.opacity = Math.max(0.4, fishScale);
+  
+  // Update impact cards
+  updateImpactCards(temp);
+});
+
+// Initialize display
+updateImpactCards(0);
+
+// ==========================
+// Depth Scroll Trigger Visual Layer Changes - Enhanced
+// ==========================
+gsap.registerPlugin(ScrollTrigger);
+
+// Depth data configuration
+const depthZones = [
+  { name: "Surface", depth: 0, color: "#87ceeb", zone: "surface" },
+  { name: "Epipelagic Zone", depth: 200, color: "#1ca3ec", zone: "surface" },
+  { name: "Mesopelagic Zone", depth: 1000, color: "#125d98", zone: "mid" },
+  { name: "Bathypelagic Zone", depth: 4000, color: "#0a324d", zone: "deep" },
+  { name: "Hadal Zone", depth: 11000, color: "#010b16", zone: "hadal" }
+];
+
+const zoneLabels = {
+  surface: "Epipelagic Zone (0-200m)",
+  mid: "Mesopelagic Zone (200-1000m)",
+  deep: "Bathypelagic Zone (1000-4000m)",
+  hadal: "Hadal Zone (4000-11000m)"
+};
+
+// Initialize depth scroll system
+function initDepthScroll() {
+  const scrollDepthSection = document.getElementById("scrollDepth");
+  const layers = document.querySelectorAll(".layer");
+  const depthBarFill = document.getElementById("depthBarFill");
+  const depthLabel = document.getElementById("depthLabel");
+  const depthZoneLabel = document.getElementById("depthZoneLabel");
+  const scrollHint = document.querySelector(".scroll-hint");
+  const depthIndicator = document.querySelector(".depth-indicator");
+  
+  let lastDepth = 0;
+  let particlesCreated = false;
+  
+  // Control depth indicator show/hide
+  function toggleDepthIndicator(show) {
+    if (!depthIndicator) return;
+    
+    if (show) {
+      depthIndicator.classList.remove("hidden");
+      depthIndicator.classList.add("visible");
+    } else {
+      depthIndicator.classList.remove("visible");
+      depthIndicator.classList.add("hidden");
+    }
+  }
+  
+  // Default show depth indicator (keep it visible)
+  if (depthIndicator) {
+    depthIndicator.classList.remove("hidden");
+    depthIndicator.classList.add("visible");
+  }
+  
+  // Create particle system (optimized)
+  const particleConfigs = {
+    surfaceParticles: { count: 30, type: "bubble" },
+    midParticles: { count: 20, type: "bioluminescent" },
+    deepParticles: { count: 15, type: "deep" },
+    hadalParticles: { count: 10, type: "abyss" }
+  };
+  
+  function createParticles(containerId, count, type) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    // Check if already created
+    if (container.querySelector(".particle")) return;
+    
+    // Adjust particle count based on device performance
+    const isMobile = window.innerWidth < 768;
+    const adjustedCount = isMobile ? Math.floor(count * 0.6) : count;
+    
+    for (let i = 0; i < adjustedCount; i++) {
+      const particle = document.createElement("div");
+      particle.className = "particle";
+      
+      const randomX = Math.random() * 100;
+      const randomY = Math.random() * 100;
+      const randomDelay = Math.random() * 8;
+      
+      if (type === "bubble") {
+        const size = Math.random() * 10 + 5;
+        particle.style.cssText = `
+          width: ${size}px;
+          height: ${size}px;
+          background: rgba(255, 255, 255, 0.6);
+          left: ${randomX}%;
+          top: ${randomY}%;
+          animation-delay: ${randomDelay}s;
+        `;
+      } else if (type === "bioluminescent") {
+        const size = Math.random() * 8 + 3;
+        const colors = ["#00ffff", "#00ff00", "#ff00ff", "#ffff00"];
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        const glowSize = Math.random() * 10 + 5;
+        particle.style.cssText = `
+          width: ${size}px;
+          height: ${size}px;
+          background: ${color};
+          box-shadow: 0 0 ${glowSize}px ${color};
+          left: ${randomX}%;
+          top: ${randomY}%;
+          animation-delay: ${randomDelay}s;
+          animation-duration: ${Math.random() * 4 + 4}s;
+        `;
+      } else if (type === "deep") {
+        const size = Math.random() * 6 + 2;
+        particle.style.cssText = `
+          width: ${size}px;
+          height: ${size}px;
+          background: rgba(128, 0, 128, 0.8);
+          box-shadow: 0 0 10px rgba(128, 0, 128, 0.8);
+          left: ${randomX}%;
+          top: ${randomY}%;
+          animation-delay: ${randomDelay + 2}s;
+          animation-duration: ${Math.random() * 6 + 6}s;
+        `;
+      } else if (type === "abyss") {
+        const size = Math.random() * 4 + 1;
+        particle.style.cssText = `
+          width: ${size}px;
+          height: ${size}px;
+          background: rgba(0, 0, 255, 0.6);
+          box-shadow: 0 0 8px rgba(0, 0, 255, 0.6);
+          left: ${randomX}%;
+          top: ${randomY}%;
+          animation-delay: ${randomDelay + 4}s;
+          animation-duration: ${Math.random() * 8 + 8}s;
+        `;
+      }
+      
+      container.appendChild(particle);
+    }
+  }
+  
+  // Delay particle initialization for better performance
+  function initParticles() {
+    Object.keys(particleConfigs).forEach(containerId => {
+      const config = particleConfigs[containerId];
+      createParticles(containerId, config.count, config.type);
+    });
+    particlesCreated = true;
+  }
+  
+  // Use Intersection Observer to lazy load particles
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && !particlesCreated) {
+        initParticles();
+        observer.disconnect();
+      }
+    });
+  }, { threshold: 0.1 });
+  
+  if (scrollDepthSection) {
+    observer.observe(scrollDepthSection);
+  }
+  
+  // Calculate current depth
+  function calculateDepth(scrollProgress) {
+    const maxDepth = 11000;
+    return Math.floor(scrollProgress * maxDepth);
+  }
+  
+  // Get current depth zone
+  function getCurrentZone(depth) {
+    if (depth < 200) return "surface";
+    if (depth < 1000) return "mid";
+    if (depth < 4000) return "deep";
+    return "hadal";
+  }
+  
+  // Update depth indicator
+  function updateDepthIndicator(depth, zone) {
+    const progress = depth / 11000;
+    depthBarFill.style.height = (progress * 100) + "%";
+    depthLabel.textContent = depth.toLocaleString() + " m";
+    depthZoneLabel.textContent = zoneLabels[zone] || "Unknown Zone";
+    
+    // Add vibration feedback (if supported)
+    if (navigator.vibrate && Math.abs(depth - lastDepth) > 100) {
+      navigator.vibrate(10);
+    }
+    lastDepth = depth;
+  }
+  
+  // Create scroll triggers for each layer
+  layers.forEach((layer, index) => {
+    const layerId = layer.id;
+    let zone = "surface";
+    
+    if (layerId === "surfaceLayer") zone = "surface";
+    else if (layerId === "midLayer") zone = "mid";
+    else if (layerId === "deepLayer") zone = "deep";
+    else if (layerId === "hadalLayer") zone = "hadal";
+    
+    // Main animation: fade in and move up
+    gsap.to(layer, {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      scrollTrigger: {
+        trigger: layer,
+        start: "top 80%",
+        end: "bottom 20%",
+        scrub: 1,
+        onEnter: () => {
+          layer.classList.add("active");
+          // Play sound effect (if enabled)
+          if (typeof oceanExplorer !== 'undefined' && oceanExplorer.audioSystem.masterVolume > 0) {
+            oceanExplorer.audioSystem.playDeepSeaSound();
+          }
+        },
+        onLeave: () => {
+          layer.classList.remove("active");
+        },
+        onEnterBack: () => {
+          layer.classList.add("active");
+        },
+        onLeaveBack: () => {
+          layer.classList.remove("active");
+        }
+      }
+    });
+    
+    // Parallax effect: content movement
+    const layerContent = layer.querySelector(".layer-content");
+    if (layerContent) {
+      gsap.to(layerContent, {
+        y: -50,
+        opacity: 1,
+        scrollTrigger: {
+          trigger: layer,
+          start: "top 80%",
+          end: "bottom 20%",
+          scrub: 1.5
+        }
+      });
+    }
+    
+    // Particle animation
+    const particles = layer.querySelectorAll(".particle");
+    particles.forEach((particle, pIndex) => {
+      gsap.to(particle, {
+        y: -200,
+        x: (Math.random() - 0.5) * 100,
+        rotation: 360,
+        scrollTrigger: {
+          trigger: layer,
+          start: "top 80%",
+          end: "bottom 20%",
+          scrub: 2
+        }
+      });
+    });
+  });
+  
+  // Track which sections should hide the indicator
+  let shouldHideIndicator = false;
+  
+  // Hide depth indicator when viewing Temperature Rise Simulation or Gaming sections
+  const coralFishSimSection = document.getElementById("coralFishSim");
+  const oceanGameSection = document.getElementById("oceanGameSection");
+  
+  const sectionObserver = new IntersectionObserver((entries) => {
+    let anySectionVisible = false;
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        anySectionVisible = true;
+      }
+    });
+    
+    shouldHideIndicator = anySectionVisible;
+    
+    if (shouldHideIndicator) {
+      // Hide depth indicator when these sections are visible
+      toggleDepthIndicator(false);
+    } else {
+      // Show depth indicator only if we're in the scrollDepth section
+      const scrollDepthRect = scrollDepthSection.getBoundingClientRect();
+      const isInScrollDepth = scrollDepthRect.top < window.innerHeight && scrollDepthRect.bottom > 0;
+      if (isInScrollDepth) {
+        toggleDepthIndicator(true);
+      }
+    }
+  }, { threshold: 0.3 });
+  
+  if (coralFishSimSection) {
+    sectionObserver.observe(coralFishSimSection);
+  }
+  if (oceanGameSection) {
+    sectionObserver.observe(oceanGameSection);
+  }
+  
+  // Overall scroll depth tracking
+  ScrollTrigger.create({
+    trigger: scrollDepthSection,
+    start: "top top",
+    end: "bottom bottom",
+    scrub: true,
+    onEnter: () => {
+      // Only show if not in a section that should hide it
+      if (!shouldHideIndicator) {
+        toggleDepthIndicator(true);
+      }
+    },
+    onLeave: () => {
+      // Only show if not in a section that should hide it
+      if (!shouldHideIndicator) {
+        toggleDepthIndicator(true);
+      }
+    },
+    onEnterBack: () => {
+      // Only show if not in a section that should hide it
+      if (!shouldHideIndicator) {
+        toggleDepthIndicator(true);
+      }
+    },
+    onLeaveBack: () => {
+      // Only show if not in a section that should hide it
+      if (!shouldHideIndicator) {
+        toggleDepthIndicator(true);
+      }
+    },
+    onUpdate: (self) => {
+      const progress = self.progress;
+      const depth = calculateDepth(progress);
+      const zone = getCurrentZone(depth);
+      updateDepthIndicator(depth, zone);
+      
+      // Check if we should hide the indicator based on other sections
+      if (!shouldHideIndicator) {
+        toggleDepthIndicator(true);
+      } else {
+        toggleDepthIndicator(false);
+      }
+      
+      // Hide scroll hint
+      if (progress > 0.1 && scrollHint) {
+        scrollHint.classList.add("hidden");
+      }
+    }
+  });
+  
+  // Add mouse movement parallax effect
+  scrollDepthSection.addEventListener("mousemove", (e) => {
+    const rect = scrollDepthSection.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    
+    layers.forEach((layer, index) => {
+      if (layer.classList.contains("active")) {
+        const parallaxX = (x - 0.5) * 20;
+        const parallaxY = (y - 0.5) * 20;
+        gsap.to(layer, {
+          x: parallaxX,
+          y: parallaxY,
+          duration: 1,
+          ease: "power2.out"
+        });
+      }
+    });
+  });
+  
+  // Add mouse leave reset
+  scrollDepthSection.addEventListener("mouseleave", () => {
+    layers.forEach(layer => {
+      gsap.to(layer, {
+        x: 0,
+        y: 0,
+        duration: 0.5,
+        ease: "power2.out"
+      });
+    });
+  });
+  
+}
+
+// Initialize depth scroll system
+if (document.getElementById("scrollDepth")) {
+  // Wait for DOM and GSAP to fully load
+  if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+    initDepthScroll();
+  } else {
+    window.addEventListener('load', () => {
+      if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+        initDepthScroll();
+      }
+    });
+  }
+}
+
+// Add keyboard shortcut support
+document.addEventListener("keydown", (e) => {
+  const scrollDepthSection = document.getElementById("scrollDepth");
+  if (!scrollDepthSection) return;
+  
+  const rect = scrollDepthSection.getBoundingClientRect();
+  const isInView = rect.top < window.innerHeight && rect.bottom > 0;
+  
+  if (isInView && (e.key === "ArrowDown" || e.key === "PageDown")) {
+    e.preventDefault();
+    const currentScroll = window.pageYOffset;
+    window.scrollTo({
+      top: currentScroll + window.innerHeight * 0.8,
+      behavior: "smooth"
+    });
+  } else if (isInView && (e.key === "ArrowUp" || e.key === "PageUp")) {
+    e.preventDefault();
+    const currentScroll = window.pageYOffset;
+    window.scrollTo({
+      top: currentScroll - window.innerHeight * 0.8,
+      behavior: "smooth"
+    });
+  }
+});
+
+// Add touch gesture support (mobile devices)
+let touchStartY = 0;
+let touchEndY = 0;
+
+document.addEventListener("touchstart", (e) => {
+  touchStartY = e.changedTouches[0].screenY;
+}, { passive: true });
+
+document.addEventListener("touchend", (e) => {
+  touchEndY = e.changedTouches[0].screenY;
+  handleSwipe();
+}, { passive: true });
+
+function handleSwipe() {
+  const scrollDepthSection = document.getElementById("scrollDepth");
+  if (!scrollDepthSection) return;
+  
+  const rect = scrollDepthSection.getBoundingClientRect();
+  const isInView = rect.top < window.innerHeight && rect.bottom > 0;
+  
+  if (!isInView) return;
+  
+  const swipeDistance = touchStartY - touchEndY;
+  const minSwipeDistance = 50;
+  
+  if (Math.abs(swipeDistance) > minSwipeDistance) {
+    if (swipeDistance > 0) {
+      // Swipe down - scroll down
+      window.scrollBy({
+        top: window.innerHeight * 0.5,
+        behavior: "smooth"
+      });
+    } else {
+      // Swipe up - scroll up
+      window.scrollBy({
+        top: -window.innerHeight * 0.5,
+        behavior: "smooth"
+      });
+    }
+  }
+}
+
+// ==========================
+// Ocean Game - Interactive Loop Game
+// ==========================
+class OceanGame {
+  constructor() {
+    this.canvas = document.getElementById('oceanGameCanvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.score = 0;
+    this.highScore = parseInt(localStorage.getItem('oceanGameHighScore') || '0');
+    this.gameRunning = false;
+    this.gameOver = false;
+    
+    // Player (submarine)
+    this.player = {
+      x: this.canvas.width / 2,
+      y: this.canvas.height / 2,
+      width: 40,
+      height: 30,
+      speed: 10,
+      facingLeft: false,
+      lastX: this.canvas.width / 2
+    };
+    
+    // Explosion effect
+    this.explosion = null;
+    
+    // Fish array
+    this.fish = [];
+    this.fishSpawnTimer = 0;
+    this.fishSpawnInterval = 60;
+    
+    // Bombs array
+    this.bombs = [];
+    this.bombSpawnTimer = 0;
+    this.bombSpawnInterval = 120;
+    
+    // Difficulty multiplier
+    this.difficultyMultiplier = 1;
+    
+    // Bubbles for atmosphere
+    this.bubbles = [];
+    
+    // Input handling
+    this.keys = {};
+    this.mousePos = { x: this.player.x, y: this.player.y };
+    
+    // Control mode: 'mouse' or 'keyboard'
+    this.controlMode = null;
+    
+    this.init();
+  }
+  
+  init() {
+    document.getElementById('highScore').textContent = this.highScore;
+    
+    // Show control selection
+    this.showControlSelection();
+    
+    // Keyboard controls
+    document.addEventListener('keydown', (e) => {
+      this.keys[e.key] = true;
+      if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || 
+          e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        e.preventDefault();
+      }
+    });
+    
+    document.addEventListener('keyup', (e) => {
+      this.keys[e.key] = false;
+    });
+    
+    // Custom cursor tracking for entire game section
+    const gameSection = document.getElementById('oceanGameSection');
+    const cursor = document.getElementById('customCursor');
+    
+    // Track mouse for custom cursor and player control
+    gameSection.addEventListener('mousemove', (e) => {
+      const rect = this.canvas.getBoundingClientRect();
+      const canvasX = e.clientX - rect.left;
+      const canvasY = e.clientY - rect.top;
+      
+      // Update mouse position for player control (only if mouse mode and within canvas)
+      if (this.controlMode === 'mouse' && 
+          canvasX >= 0 && canvasX <= this.canvas.width && 
+          canvasY >= 0 && canvasY <= this.canvas.height) {
+        this.mousePos.x = canvasX;
+        this.mousePos.y = canvasY;
+      }
+      
+      // Update custom cursor position relative to canvas (only in mouse mode)
+      if (cursor && this.controlMode === 'mouse') {
+        const canvasRect = this.canvas.getBoundingClientRect();
+        cursor.style.left = (e.clientX - canvasRect.left) + 'px';
+        cursor.style.top = (e.clientY - canvasRect.top) + 'px';
+        cursor.style.opacity = '1';
+      }
+    });
+    
+    // Hide cursor when mouse leaves game section
+    gameSection.addEventListener('mouseleave', () => {
+      if (cursor) cursor.style.opacity = '0';
+    });
+    
+    // Click anywhere to restart when game is over
+    this.canvas.addEventListener('click', () => {
+      if (this.gameOver) {
+        this.restart();
+      }
+    });
+    
+    // Also allow clicking on overlay or restart message to restart
+    const overlay = document.getElementById('gameOverlay');
+    if (overlay) {
+      overlay.addEventListener('click', () => {
+        if (this.gameOver) {
+          this.restart();
+        }
+      });
+    }
+    
+    const restartBtn = document.getElementById('restartGameBtn');
+    if (restartBtn) {
+      restartBtn.addEventListener('click', () => {
+        if (this.gameOver) {
+          this.restart();
+        }
+      });
+    }
+    
+    // Initialize bubbles
+    for (let i = 0; i < 20; i++) {
+      this.bubbles.push({
+        x: Math.random() * this.canvas.width,
+        y: Math.random() * this.canvas.height,
+        radius: Math.random() * 5 + 2,
+        speed: Math.random() * 2 + 0.5,
+        opacity: Math.random() * 0.5 + 0.2
+      });
+    }
+    
+    // Don't start game yet - wait for control selection
+  }
+  
+  showControlSelection() {
+    const selection = document.getElementById('controlSelection');
+    const mouseBtn = document.getElementById('mouseControlBtn');
+    const keyboardBtn = document.getElementById('keyboardControlBtn');
+    const statusEl = document.getElementById('gameStatus');
+    
+    if (!selection || !mouseBtn || !keyboardBtn) {
+      console.error('Control selection elements not found');
+      return;
+    }
+    
+    selection.style.display = 'block';
+    if (statusEl) {
+      statusEl.textContent = 'Please select control method';
+    }
+    
+    mouseBtn.addEventListener('click', () => {
+      this.controlMode = 'mouse';
+      this.setupControls();
+      selection.style.display = 'none';
+      if (statusEl) {
+        statusEl.textContent = 'Use mouse to move submarine and collect fish!';
+      }
+      this.start();
+    });
+    
+    keyboardBtn.addEventListener('click', () => {
+      this.controlMode = 'keyboard';
+      this.setupControls();
+      selection.style.display = 'none';
+      if (statusEl) {
+        statusEl.textContent = 'Use arrow keys to move submarine and collect fish!';
+      }
+      this.start();
+    });
+  }
+  
+  setupControls() {
+    const cursor = document.getElementById('customCursor');
+    
+    if (this.controlMode === 'mouse') {
+      // Enable mouse control, show cursor
+      if (cursor) cursor.style.display = 'block';
+      // Keyboard controls are still registered but won't be used in update()
+    } else if (this.controlMode === 'keyboard') {
+      // Disable mouse control, hide cursor
+      if (cursor) cursor.style.display = 'none';
+      // Mouse tracking still works for cursor display but won't move player
+    }
+  }
+  
+  start() {
+    this.gameRunning = true;
+    this.gameOver = false;
+    this.score = 0;
+    this.fish = [];
+    this.bombs = [];
+    this.explosion = null;
+    this.fishSpawnTimer = 0;
+    this.bombSpawnTimer = 0;
+    this.player.x = this.canvas.width / 2;
+    this.player.y = this.canvas.height / 2;
+    this.player.lastX = this.player.x;
+    document.getElementById('gameScore').textContent = 0;
+    const statusEl = document.getElementById('gameStatus');
+    if (statusEl) {
+      if (this.controlMode === 'mouse') {
+        statusEl.textContent = 'Use mouse to move submarine and collect fish!';
+      } else if (this.controlMode === 'keyboard') {
+        statusEl.textContent = 'Use arrow keys to move submarine and collect fish!';
+      } else {
+        statusEl.textContent = 'Game in progress!';
+      }
+      statusEl.classList.remove('game-over');
+    }
+    const overlay = document.getElementById('gameOverlay');
+    overlay.style.display = 'none';
+    overlay.style.pointerEvents = 'none';
+    overlay.style.cursor = 'default';
+    const restartBtn = document.getElementById('restartGameBtn');
+    restartBtn.style.display = 'none';
+    this.gameLoop();
+  }
+  
+  restart() {
+    // Keep the same control mode, just restart the game
+    // Reset player position
+    this.player.x = this.canvas.width / 2;
+    this.player.y = this.canvas.height / 2;
+    this.player.lastX = this.player.x;
+    this.start();
+  }
+  
+  update() {
+    if (!this.gameRunning) return;
+    
+    // Track previous position for direction
+    this.player.lastX = this.player.x;
+    
+    // Update player position based on selected control mode
+    if (this.controlMode === 'keyboard') {
+      // Keyboard control only
+      if (this.keys['ArrowUp'] || this.keys['w'] || this.keys['W']) {
+        this.player.y = Math.max(this.player.height / 2, this.player.y - this.player.speed);
+      }
+      if (this.keys['ArrowDown'] || this.keys['s'] || this.keys['S']) {
+        this.player.y = Math.min(this.canvas.height - this.player.height / 2, this.player.y + this.player.speed);
+      }
+      if (this.keys['ArrowLeft'] || this.keys['a'] || this.keys['A']) {
+        this.player.x = Math.max(this.player.width / 2, this.player.x - this.player.speed);
+        this.player.facingLeft = true;
+      }
+      if (this.keys['ArrowRight'] || this.keys['d'] || this.keys['D']) {
+        this.player.x = Math.min(this.canvas.width - this.player.width / 2, this.player.x + this.player.speed);
+        this.player.facingLeft = false;
+      }
+      
+      // Update facing direction based on last movement for keyboard
+      if (this.player.x < this.player.lastX) {
+        this.player.facingLeft = true;
+      } else if (this.player.x > this.player.lastX) {
+        this.player.facingLeft = false;
+      }
+    } else if (this.controlMode === 'mouse') {
+      // Mouse control only - smooth follow
+      const dx = this.mousePos.x - this.player.x;
+      const dy = this.mousePos.y - this.player.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance > 5) {
+        this.player.x += (dx / distance) * this.player.speed * 0.8;
+        this.player.y += (dy / distance) * this.player.speed * 0.8;
+        this.player.x = Math.max(this.player.width / 2, Math.min(this.canvas.width - this.player.width / 2, this.player.x));
+        this.player.y = Math.max(this.player.height / 2, Math.min(this.canvas.height - this.player.height / 2, this.player.y));
+        
+        // Update facing direction based on movement
+        if (Math.abs(dx) > 1) {
+          this.player.facingLeft = dx < 0;
+        }
+      } else {
+        // Update facing direction based on last movement
+        if (this.player.x < this.player.lastX) {
+          this.player.facingLeft = true;
+        } else if (this.player.x > this.player.lastX) {
+          this.player.facingLeft = false;
+        }
+      }
+    }
+    
+    // Calculate difficulty multiplier based on score
+    this.difficultyMultiplier = 1 + (this.score / 100); // Increases by 1% per 100 points
+    
+    // Spawn fish
+    this.fishSpawnTimer++;
+    if (this.fishSpawnTimer >= this.fishSpawnInterval) {
+      this.spawnFish();
+      this.fishSpawnTimer = 0;
+      this.fishSpawnInterval = Math.max(20, 60 - Math.floor(this.score / 10));
+    }
+    
+    // Spawn bombs - spawn more as score increases
+    this.bombSpawnTimer++;
+    if (this.bombSpawnTimer >= this.bombSpawnInterval) {
+      // Spawn multiple bombs at higher scores
+      const bombCount = Math.min(1 + Math.floor(this.score / 50), 3); // Max 3 bombs at once
+      for (let i = 0; i < bombCount; i++) {
+        this.spawnBomb();
+      }
+      this.bombSpawnTimer = 0;
+      this.bombSpawnInterval = Math.max(60, 120 - Math.floor(this.score / 15));
+    }
+    
+    // Update fish - apply difficulty multiplier to speed
+    for (let i = this.fish.length - 1; i >= 0; i--) {
+      const f = this.fish[i];
+      // Speed increases with difficulty
+      const currentSpeed = f.baseSpeed * this.difficultyMultiplier;
+      f.x += currentSpeed;
+      
+      // Check collision with player
+      const dist = Math.sqrt(
+        Math.pow(f.x - this.player.x, 2) + Math.pow(f.y - this.player.y, 2)
+      );
+      if (dist < (this.player.width / 2 + f.radius)) {
+        this.score += f.points;
+        document.getElementById('gameScore').textContent = this.score;
+        if (this.score > this.highScore) {
+          this.highScore = this.score;
+          localStorage.setItem('oceanGameHighScore', this.highScore.toString());
+          document.getElementById('highScore').textContent = this.highScore;
+        }
+        this.fish.splice(i, 1);
+        continue;
+      }
+      
+      // Remove fish that went off screen (use baseSpeed for direction check)
+      if (f.baseSpeed > 0 && f.x > this.canvas.width + 50) {
+        this.fish.splice(i, 1);
+      } else if (f.baseSpeed < 0 && f.x < -50) {
+        this.fish.splice(i, 1);
+      }
+    }
+    
+    // Update bombs - apply difficulty multiplier to speed
+    for (let i = this.bombs.length - 1; i >= 0; i--) {
+      const bomb = this.bombs[i];
+      // Speed increases with difficulty
+      const currentSpeed = bomb.baseSpeed * this.difficultyMultiplier;
+      bomb.x += currentSpeed;
+      bomb.rotation += bomb.rotationSpeed;
+      
+      // Check collision with player
+      const dist = Math.sqrt(
+        Math.pow(bomb.x - this.player.x, 2) + Math.pow(bomb.y - this.player.y, 2)
+      );
+      if (dist < (this.player.width / 2 + bomb.radius)) {
+        // Game over! Create explosion effect
+        this.createExplosion(this.player.x, this.player.y);
+        this.endGame();
+        return;
+      }
+      
+      // Remove bombs that went off screen (use baseSpeed for direction check)
+      if (bomb.baseSpeed > 0 && bomb.x > this.canvas.width + 50) {
+        this.bombs.splice(i, 1);
+      } else if (bomb.baseSpeed < 0 && bomb.x < -50) {
+        this.bombs.splice(i, 1);
+      }
+    }
+    
+    // Update bubbles
+    for (let bubble of this.bubbles) {
+      bubble.y -= bubble.speed;
+      bubble.x += Math.sin(bubble.y * 0.01) * 0.5;
+      if (bubble.y < -bubble.radius) {
+        bubble.y = this.canvas.height + bubble.radius;
+        bubble.x = Math.random() * this.canvas.width;
+      }
+    }
+    
+    // Update explosion
+    this.updateExplosion();
+  }
+  
+  spawnFish() {
+    const side = Math.random() < 0.5 ? 'left' : 'right';
+    const fishTypes = [
+      { radius: 15, speed: 2, points: 10, color: '#FFD700' }, // Gold fish
+      { radius: 12, speed: 3, points: 5, color: '#FF6B6B' },  // Red fish
+      { radius: 10, speed: 4, points: 3, color: '#4ECDC4' },  // Teal fish
+      { radius: 18, speed: 1.5, points: 20, color: '#FFA500' } // Orange fish (rare)
+    ];
+    
+    const type = fishTypes[Math.random() < 0.1 ? 3 : Math.floor(Math.random() * 3)];
+    const baseSpeed = type.speed * (side === 'left' ? 1 : -1);
+    
+    this.fish.push({
+      x: side === 'left' ? -type.radius : this.canvas.width + type.radius,
+      y: Math.random() * (this.canvas.height - 100) + 50,
+      radius: type.radius,
+      baseSpeed: baseSpeed, // Store base speed for difficulty scaling
+      speed: baseSpeed, // Current speed (will be updated by difficulty)
+      points: type.points,
+      color: type.color,
+      angle: 0,
+      wiggleSpeed: Math.random() * 0.1 + 0.05,
+      facingLeft: baseSpeed < 0 // Track direction for drawing
+    });
+  }
+  
+  spawnBomb() {
+    const side = Math.random() < 0.5 ? 'left' : 'right';
+    const baseSpeed = (Math.random() * 2 + 1.5) * (side === 'left' ? 1 : -1);
+    
+    this.bombs.push({
+      x: side === 'left' ? -20 : this.canvas.width + 20,
+      y: Math.random() * (this.canvas.height - 100) + 50,
+      radius: 20,
+      baseSpeed: baseSpeed, // Store base speed for difficulty scaling
+      speed: baseSpeed, // Current speed (will be updated by difficulty)
+      rotation: 0,
+      rotationSpeed: 0.1,
+      facingLeft: baseSpeed < 0
+    });
+  }
+  
+  createExplosion(x, y) {
+    this.explosion = {
+      x: x,
+      y: y,
+      timer: 0,
+      duration: 60, // frames
+      particles: []
+    };
+    
+    // Create particle effects
+    for (let i = 0; i < 20; i++) {
+      this.explosion.particles.push({
+        x: x,
+        y: y,
+        vx: (Math.random() - 0.5) * 10,
+        vy: (Math.random() - 0.5) * 10,
+        life: 1.0,
+        decay: Math.random() * 0.02 + 0.01
+      });
+    }
+  }
+  
+  updateExplosion() {
+    if (!this.explosion) return;
+    
+    this.explosion.timer++;
+    
+    // Update particles
+    for (let particle of this.explosion.particles) {
+      particle.x += particle.vx;
+      particle.y += particle.vy;
+      particle.vx *= 0.95;
+      particle.vy *= 0.95;
+      particle.life -= particle.decay;
+    }
+    
+    // Remove explosion after duration
+    if (this.explosion.timer >= this.explosion.duration) {
+      this.explosion = null;
+    }
+  }
+  
+  drawExplosion() {
+    if (!this.explosion) return;
+    
+    const progress = this.explosion.timer / this.explosion.duration;
+    
+    // Draw explosion particles
+    for (let particle of this.explosion.particles) {
+      if (particle.life > 0) {
+        this.ctx.save();
+        this.ctx.globalAlpha = particle.life;
+        this.ctx.fillStyle = `hsl(${Math.random() * 60}, 100%, ${50 + Math.random() * 50}%)`;
+        this.ctx.beginPath();
+        this.ctx.arc(particle.x, particle.y, 3, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.restore();
+      }
+    }
+    
+    // Draw charcoaled emoji in center
+    if (progress < 0.8) {
+      this.ctx.save();
+      this.ctx.globalAlpha = 1 - progress * 1.25;
+      this.ctx.font = `${80 - progress * 20}px Arial`;
+      this.ctx.textAlign = 'center';
+      this.ctx.textBaseline = 'middle';
+      
+      // Charcoaled/black emoji effect
+      this.ctx.fillStyle = '#1a1a1a';
+      this.ctx.fillText('💀', this.explosion.x, this.explosion.y - 10);
+      
+      // Add some gray overlay for charcoaled effect
+      this.ctx.fillStyle = 'rgba(100, 100, 100, 0.3)';
+      this.ctx.fillText('💀', this.explosion.x + 2, this.explosion.y - 8);
+      
+      this.ctx.restore();
+    }
+  }
+  
+  endGame() {
+    this.gameRunning = false;
+    this.gameOver = true;
+    const statusEl = document.getElementById('gameStatus');
+    if (statusEl) {
+      statusEl.textContent = 'Game Over! Hit a bomb!';
+      statusEl.classList.add('game-over');
+    }
+    
+    // Show overlay and restart message in center
+    const overlay = document.getElementById('gameOverlay');
+    overlay.style.display = 'block';
+    overlay.style.pointerEvents = 'auto'; // Enable clicking
+    overlay.style.cursor = 'pointer';
+    const restartBtn = document.getElementById('restartGameBtn');
+    restartBtn.style.display = 'block';
+  }
+  
+  draw() {
+    // Draw ocean background gradient
+    const gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+    gradient.addColorStop(0, '#001a33');
+    gradient.addColorStop(0.5, '#003366');
+    gradient.addColorStop(1, '#001122');
+    this.ctx.fillStyle = gradient;
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    // Draw bubbles
+    for (let bubble of this.bubbles) {
+      this.ctx.beginPath();
+      this.ctx.arc(bubble.x, bubble.y, bubble.radius, 0, Math.PI * 2);
+      this.ctx.fillStyle = `rgba(173, 216, 230, ${bubble.opacity})`;
+      this.ctx.fill();
+      this.ctx.strokeStyle = `rgba(255, 255, 255, ${bubble.opacity * 0.5})`;
+      this.ctx.lineWidth = 1;
+      this.ctx.stroke();
+    }
+    
+    // Draw fish
+    for (let f of this.fish) {
+      f.angle += f.wiggleSpeed;
+      this.ctx.save();
+      this.ctx.translate(f.x, f.y);
+      
+      // Flip horizontally if moving left
+      if (f.facingLeft) {
+        this.ctx.scale(-1, 1);
+      }
+      
+      this.ctx.rotate(Math.sin(f.angle) * 0.2);
+      
+      // Fish body
+      this.ctx.fillStyle = f.color;
+      this.ctx.beginPath();
+      this.ctx.ellipse(0, 0, f.radius, f.radius * 0.6, 0, 0, Math.PI * 2);
+      this.ctx.fill();
+      
+      // Fish tail
+      this.ctx.beginPath();
+      this.ctx.moveTo(-f.radius, 0);
+      this.ctx.lineTo(-f.radius * 1.5, -f.radius * 0.5);
+      this.ctx.lineTo(-f.radius * 1.5, f.radius * 0.5);
+      this.ctx.closePath();
+      this.ctx.fill();
+      
+      // Fish eye
+      this.ctx.fillStyle = 'white';
+      this.ctx.beginPath();
+      this.ctx.arc(f.radius * 0.4, -f.radius * 0.2, f.radius * 0.2, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.fillStyle = 'black';
+      this.ctx.beginPath();
+      this.ctx.arc(f.radius * 0.5, -f.radius * 0.2, f.radius * 0.1, 0, Math.PI * 2);
+      this.ctx.fill();
+      
+      this.ctx.restore();
+    }
+    
+    // Draw bombs
+    for (let bomb of this.bombs) {
+      this.ctx.save();
+      this.ctx.translate(bomb.x, bomb.y);
+      this.ctx.rotate(bomb.rotation);
+      
+      // Bomb body (dark circle)
+      this.ctx.fillStyle = '#2C2C2C';
+      this.ctx.beginPath();
+      this.ctx.arc(0, 0, bomb.radius, 0, Math.PI * 2);
+      this.ctx.fill();
+      
+      // Bomb highlight
+      this.ctx.fillStyle = '#4A4A4A';
+      this.ctx.beginPath();
+      this.ctx.arc(-bomb.radius * 0.3, -bomb.radius * 0.3, bomb.radius * 0.4, 0, Math.PI * 2);
+      this.ctx.fill();
+      
+      // Fuse
+      this.ctx.strokeStyle = '#8B4513';
+      this.ctx.lineWidth = 3;
+      this.ctx.beginPath();
+      this.ctx.moveTo(0, -bomb.radius);
+      this.ctx.lineTo(0, -bomb.radius * 1.8);
+      this.ctx.stroke();
+      
+      // Spark at end of fuse
+      this.ctx.fillStyle = '#FF6B00';
+      this.ctx.beginPath();
+      this.ctx.arc(0, -bomb.radius * 1.8, 3, 0, Math.PI * 2);
+      this.ctx.fill();
+      
+      // Warning glow
+      this.ctx.shadowBlur = 15;
+      this.ctx.shadowColor = '#FF0000';
+      this.ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+      this.ctx.lineWidth = 2;
+      this.ctx.beginPath();
+      this.ctx.arc(0, 0, bomb.radius + 2, 0, Math.PI * 2);
+      this.ctx.stroke();
+      this.ctx.shadowBlur = 0;
+      
+      this.ctx.restore();
+    }
+    
+    // Draw player (submarine) - only if game is running or no explosion yet
+    if (this.gameRunning || !this.explosion) {
+      this.ctx.save();
+      this.ctx.translate(this.player.x, this.player.y);
+      
+      // Flip horizontally if facing left
+      if (this.player.facingLeft) {
+        this.ctx.scale(-1, 1);
+      }
+      
+      // Submarine body
+      this.ctx.fillStyle = '#4A90E2';
+      this.ctx.beginPath();
+      this.ctx.ellipse(0, 0, this.player.width / 2, this.player.height / 2, 0, 0, Math.PI * 2);
+      this.ctx.fill();
+      
+      // Submarine window (adjust position based on facing direction)
+      this.ctx.fillStyle = '#87CEEB';
+      this.ctx.beginPath();
+      const windowX = this.player.facingLeft ? 5 : -5;
+      this.ctx.arc(windowX, -5, 8, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.strokeStyle = '#1E3A5F';
+      this.ctx.lineWidth = 2;
+      this.ctx.stroke();
+      
+      // Submarine tail (always at the back relative to facing direction)
+      this.ctx.fillStyle = '#2E5C8A';
+      this.ctx.beginPath();
+      const tailX = -this.player.width / 2;
+      this.ctx.moveTo(tailX, 0);
+      this.ctx.lineTo(tailX - 10, -this.player.height / 3);
+      this.ctx.lineTo(tailX - 10, this.player.height / 3);
+      this.ctx.closePath();
+      this.ctx.fill();
+      
+      // Propeller effect
+      this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      this.ctx.lineWidth = 2;
+      for (let i = 0; i < 3; i++) {
+        const angle = (Date.now() * 0.01 + i * Math.PI * 2 / 3) % (Math.PI * 2);
+        this.ctx.beginPath();
+        this.ctx.moveTo(tailX - 10, 0);
+        this.ctx.lineTo(
+          tailX - 15 + Math.cos(angle) * 5,
+          Math.sin(angle) * 5
+        );
+        this.ctx.stroke();
+      }
+      
+      this.ctx.restore();
+    }
+    
+    // Draw explosion effect
+    this.drawExplosion();
+  }
+  
+  gameLoop() {
+    if (this.gameRunning) {
+      this.update();
+      this.draw();
+      requestAnimationFrame(() => this.gameLoop());
+    } else {
+      // Continue drawing explosion animation even after game ends
+      if (this.explosion) {
+        this.updateExplosion();
+        this.draw();
+        requestAnimationFrame(() => this.gameLoop());
+      } else {
+        // Draw final frame when explosion is done
+        this.draw();
+      }
+    }
+  }
+}
+
+// Initialize game when page loads
+let oceanGame;
+window.addEventListener('load', () => {
+  oceanGame = new OceanGame();
+});
+
+// ==========================
+// Creature Statistics Modal
+// ==========================
+const creatureData = {
+  "Oceanic Whitetip Shark": {
+    scientific: "Carcharhinus longimanus",
+    depth: "0-200m",
+    size: "3-4m",
+    diet: "Carnivorous - Fish, Squid",
+    status: "Vulnerable",
+    description: "The oceanic whitetip shark is a large pelagic shark known for its long, rounded white-tipped fins. They primarily live in open ocean waters and are apex predators.",
+    facts: [
+      "They can travel great distances across open ocean",
+      "Historically considered one of the dangerous shark species",
+      "Their numbers have declined significantly due to overfishing",
+      "They have an acute sense of smell and can detect blood from kilometers away"
+    ],
+    chart: {
+      type: "activity",
+      data: [
+        {hour: 0, activity: 35}, {hour: 2, activity: 30}, {hour: 4, activity: 25},
+        {hour: 6, activity: 65}, {hour: 8, activity: 75}, {hour: 10, activity: 80},
+        {hour: 12, activity: 85}, {hour: 14, activity: 90}, {hour: 16, activity: 85},
+        {hour: 18, activity: 70}, {hour: 20, activity: 50}, {hour: 22, activity: 40}
+      ],
+      title: "24-Hour Activity Pattern"
+    }
+  },
+  "Giant Oceanic Manta Ray": {
+    scientific: "Mobula birostris",
+    depth: "0-200m",
+    size: "Wingspan up to 7m",
+    diet: "Filter feeder - Plankton, Small fish",
+    status: "Endangered",
+    description: "The giant oceanic manta ray is the largest ray species, known for its massive wingspan and graceful swimming. They are gentle filter feeders.",
+    facts: [
+      "Largest ray species with wingspan up to 7 meters",
+      "They perform spectacular jumping behaviors",
+      "Largest brain-to-body ratio of any fish",
+      "They regularly visit cleaning stations where small fish remove parasites"
+    ],
+    chart: {
+      type: "depthDistributionLine",
+      data: [
+        {depth: 0, density: 25}, {depth: 10, density: 50}, {depth: 20, density: 75},
+        {depth: 30, density: 90}, {depth: 40, density: 95}, {depth: 50, density: 85},
+        {depth: 60, density: 70}, {depth: 80, density: 50}, {depth: 100, density: 30},
+        {depth: 120, density: 15}, {depth: 150, density: 8}, {depth: 200, density: 2}
+      ],
+      title: "Depth Distribution Density"
+    }
+  },
+  "Reef-Building Coral": {
+    scientific: "Scleractinia",
+    depth: "0-50m",
+    size: "Colonies can reach several meters",
+    diet: "Symbiotic - Zooxanthellae photosynthesis",
+    status: "Threatened",
+    description: "Reef-building corals are the foundation of marine ecosystems, providing habitat for countless marine organisms. They live in symbiotic relationships with zooxanthellae algae.",
+    facts: [
+      "Coral reefs cover less than 1% of the ocean but support 25% of marine life",
+      "They are highly sensitive to temperature changes",
+      "Coral bleaching is a major threat from climate change",
+      "Some corals can live for thousands of years"
+    ],
+    chart: {
+      type: "temperatureTolerance",
+      data: [
+        {temp: 18, health: 0}, {temp: 20, health: 15}, {temp: 22, health: 40},
+        {temp: 24, health: 75}, {temp: 26, health: 100}, {temp: 28, health: 100},
+        {temp: 30, health: 45}, {temp: 32, health: 5}, {temp: 34, health: 0}
+      ],
+      title: "Temperature Tolerance (°C)"
+    }
+  },
+  "Devil Ray": {
+    scientific: "Mobula mobular",
+    depth: "200-1000m",
+    size: "Wingspan 3-5m",
+    diet: "Filter feeder - Plankton",
+    status: "Endangered",
+    description: "The devil ray is a deep-water ray known for its unique head shape and deep-diving capabilities. They can forage in the deep sea.",
+    facts: [
+      "Can dive to depths of 1000 meters to forage",
+      "They have specialized head structures for filtering plankton",
+      "Undertake group migrations",
+      "Endangered due to overfishing and habitat destruction"
+    ],
+    chart: {
+      type: "depthDive",
+      data: [
+        {time: 0, depth: 0}, {time: 3, depth: 100}, {time: 6, depth: 200},
+        {time: 9, depth: 350}, {time: 12, depth: 500}, {time: 15, depth: 650},
+        {time: 18, depth: 800}, {time: 21, depth: 950}, {time: 24, depth: 1000},
+        {time: 27, depth: 850}, {time: 30, depth: 600}, {time: 33, depth: 350},
+        {time: 36, depth: 150}, {time: 39, depth: 0}
+      ],
+      title: "Typical Diving Depth Pattern (minutes)"
+    }
+  },
+  "Deepwater Shark": {
+    scientific: "Various species",
+    depth: "200-2000m",
+    size: "1-3m",
+    diet: "Carnivorous - Fish, Crustaceans",
+    status: "Data Deficient",
+    description: "Deepwater sharks include various shark species adapted to deep-water environments. They have special physiological adaptations to survive in high-pressure and low-temperature conditions.",
+    facts: [
+      "Many deepwater sharks have bioluminescent capabilities",
+      "They have slow metabolism and can go long periods without feeding",
+      "Eyes are typically large to adapt to low-light environments",
+      "We know little about them due to their deep-sea habitat"
+    ],
+    chart: {
+      type: "pressureToleranceLine",
+      data: [
+        {pressure: 0, survival: 100}, {pressure: 20, survival: 100}, {pressure: 50, survival: 100},
+        {pressure: 100, survival: 98}, {pressure: 150, survival: 95}, {pressure: 200, survival: 90},
+        {pressure: 250, survival: 80}, {pressure: 300, survival: 65}, {pressure: 350, survival: 40}
+      ],
+      title: "Pressure Tolerance (atmospheres)"
+    }
+  },
+  "Deepwater Seahorse": {
+    scientific: "Hippocampus spp.",
+    depth: "200-1000m",
+    size: "10-30cm",
+    diet: "Carnivorous - Small crustaceans",
+    status: "Vulnerable",
+    description: "Deepwater seahorses are unique fish adapted to deep-water environments. They have special body structures that allow them to maintain stability in the deep sea.",
+    facts: [
+      "Male seahorses are responsible for pregnancy and birth",
+      "They have unique tails that can grasp objects",
+      "Threatened by habitat destruction",
+      "They move slowly and rely on camouflage to avoid predators"
+    ],
+    chart: {
+      type: "threatRadar",
+      data: [
+        {threat: "Habitat Destruction", value: 90},
+        {threat: "Overfishing", value: 75},
+        {threat: "Pollution", value: 65},
+        {threat: "Climate Change", value: 55},
+        {threat: "Invasive Species", value: 25}
+      ],
+      title: "Survival Threat Assessment"
+    }
+  },
+  "Scaly-foot Snail": {
+    scientific: "Chrysomallon squamiferum",
+    depth: "2000-3000m",
+    size: "3-4cm",
+    diet: "Symbiotic bacteria",
+    status: "Endangered",
+    description: "The scaly-foot snail is a unique deep-sea mollusk with iron-sulfide scales covering its foot. They live near hydrothermal vents.",
+    facts: [
+      "Only known animal with iron scales",
+      "They live in extreme high-temperature and high-pressure environments",
+      "Depend on symbiotic bacteria for nutrition",
+      "Threatened by deep-sea mining"
+    ],
+    chart: {
+      type: "temperaturePressure",
+      data: [
+        {temp: 2, pressure: 200, survival: 100}, {temp: 2, pressure: 250, survival: 95},
+        {temp: 2, pressure: 300, survival: 90}, {temp: 10, pressure: 300, survival: 85},
+        {temp: 20, pressure: 300, survival: 70}, {temp: 40, pressure: 300, survival: 60},
+        {temp: 60, pressure: 300, survival: 50}, {temp: 80, pressure: 300, survival: 30},
+        {temp: 100, pressure: 300, survival: 5}
+      ],
+      title: "Temperature and Pressure Tolerance"
+    }
+  },
+  "Hydrothermal Vent Mollusc": {
+    scientific: "Various species",
+    depth: "2000-4000m",
+    size: "5-20cm",
+    diet: "Symbiotic bacteria",
+    status: "Data Deficient",
+    description: "Hydrothermal vent molluscs are a group of mollusks adapted to extreme environments. They live near hydrothermal vents and depend on chemosynthetic bacteria for energy.",
+    facts: [
+      "Can survive temperatures up to 80°C",
+      "They don't depend on sunlight but on chemical energy",
+      "Important component of hydrothermal vent ecosystems",
+      "Face habitat destruction from deep-sea mining"
+    ],
+    chart: {
+      type: "temperatureRange",
+      data: [
+        {temp: 0, viability: 0}, {temp: 10, viability: 20}, {temp: 20, viability: 45},
+        {temp: 30, viability: 70}, {temp: 40, viability: 90}, {temp: 50, viability: 100},
+        {temp: 60, viability: 95}, {temp: 70, viability: 80}, {temp: 80, viability: 50},
+        {temp: 90, viability: 10}, {temp: 100, viability: 0}
+      ],
+      title: "Temperature Survival Range (°C)"
+    }
+  },
+  "Deep-sea Crustacean": {
+    scientific: "Various species",
+    depth: "1000-4000m",
+    size: "5-50cm",
+    diet: "Omnivorous - Detritus, Small organisms",
+    status: "Data Deficient",
+    description: "Deep-sea crustaceans include various shrimp, crabs, and isopods adapted to deep-water environments. They have special adaptations to survive in extreme conditions.",
+    facts: [
+      "Many deep-sea crustaceans have bioluminescent capabilities",
+      "They can withstand extremely high pressure",
+      "Slow metabolism allows them to go long periods without feeding",
+      "Important component of deep-sea food webs"
+    ],
+    chart: {
+      type: "depthRange",
+      data: [
+        {depth: 500, abundance: 15}, {depth: 1000, abundance: 40}, {depth: 1500, abundance: 70},
+        {depth: 2000, abundance: 95}, {depth: 2500, abundance: 100}, {depth: 3000, abundance: 85},
+        {depth: 3500, abundance: 55}, {depth: 4000, abundance: 25}
+      ],
+      title: "Depth Distribution Abundance"
+    }
+  },
+  "Endemic Hydrothermal Vent Shrimp": {
+    scientific: "Rimicaris exoculata",
+    depth: "2000-4000m",
+    size: "5-8cm",
+    diet: "Symbiotic bacteria",
+    status: "Data Deficient",
+    description: "Endemic hydrothermal vent shrimp are shrimp species unique to hydrothermal vents. They live in extreme environments and depend on chemosynthetic bacteria for nutrition.",
+    facts: [
+      "They have degenerate eyes but have light-sensitive organs on their backs",
+      "Can detect faint light emitted from hydrothermal vents",
+      "Form dense aggregations numbering in the thousands",
+      "Key species in hydrothermal vent ecosystems"
+    ],
+    chart: {
+      type: "donut",
+      data: [
+        {category: "Core Zone (0-0.5m)", value: 45},
+        {category: "Proximal Zone (0.5-1m)", value: 25},
+        {category: "Mid Zone (1-2m)", value: 18},
+        {category: "Distal Zone (2-3m)", value: 10},
+        {category: "Edge Zone (3m+)", value: 2}
+      ],
+      title: "Population Distribution from Hydrothermal Vent"
+    }
+  },
+  "Hadal Snailfish": {
+    scientific: "Pseudoliparis spp.",
+    depth: "6000-8000m",
+    size: "10-30cm",
+    diet: "Carnivorous - Small crustaceans",
+    status: "Data Deficient",
+    description: "Hadal zone fish (such as snailfish) are fish that live in the deepest ocean trenches. They have special physiological adaptations to survive under extreme pressure.",
+    facts: [
+      "Among the deepest-living fish known",
+      "They lack swim bladders and their bodies are mostly gelatinous",
+      "Can withstand pressures exceeding 800 atmospheres",
+      "We know little about them due to their extreme depth habitat"
+    ],
+    chart: {
+      type: "pressureSurvival",
+      data: [
+        {pressure: 400, survival: 100}, {pressure: 500, survival: 100}, {pressure: 600, survival: 100},
+        {pressure: 700, survival: 98}, {pressure: 800, survival: 95}, {pressure: 900, survival: 85},
+        {pressure: 1000, survival: 70}, {pressure: 1100, survival: 40}, {pressure: 1200, survival: 5}
+      ],
+      title: "Pressure Survival Capability (atmospheres)"
+    }
+  },
+  "Hadal Microbial Community": {
+    scientific: "Various extremophiles",
+    depth: "6000-11000m",
+    size: "Microscopic",
+    diet: "Chemosynthesis",
+    status: "Not Evaluated",
+    description: "Hadal microbial communities are microbial communities living in the deepest ocean trenches. They represent the limits of life in extreme environments.",
+    facts: [
+      "Can survive pressures exceeding 1000 atmospheres",
+      "They depend on chemosynthesis rather than photosynthesis",
+      "Foundation of deep-sea food webs",
+      "May contain unique compounds valuable to science and medicine"
+    ],
+    chart: {
+      type: "extremeConditions",
+      data: [
+        {condition: "Pressure Tolerance", value: 100},
+        {condition: "Low Temperature Adaptation", value: 100},
+        {condition: "Chemosynthesis", value: 100},
+        {condition: "Anoxic Environment", value: 95},
+        {condition: "Extreme pH", value: 90}
+      ],
+      title: "Extreme Environment Adaptation Capability"
+    }
+  }
+};
+
+// Modal functionality
+const creatureModal = document.getElementById('creatureModal');
+const modalClose = document.querySelector('.creature-modal-close');
+
+function showCreatureModal(creatureName) {
+  const data = creatureData[creatureName];
+  if (!data) {
+    console.warn('No data found for creature:', creatureName);
+    return;
+  }
+  
+  // Populate modal with data
+  document.getElementById('modalCreatureName').textContent = creatureName;
+  document.getElementById('modalCreatureScientific').textContent = data.scientific;
+  document.getElementById('modalDepth').textContent = data.depth;
+  document.getElementById('modalSize').textContent = data.size;
+  document.getElementById('modalDiet').textContent = data.diet;
+  document.getElementById('modalStatus').textContent = data.status;
+  document.getElementById('modalDescription').textContent = data.description;
+  
+  // Populate facts list
+  const factsList = document.getElementById('modalFacts');
+  factsList.innerHTML = '';
+  data.facts.forEach(fact => {
+    const li = document.createElement('li');
+    li.textContent = fact;
+    factsList.appendChild(li);
+  });
+  
+  // Render chart if available
+  if (data.chart) {
+    renderCreatureChart(data.chart);
+  } else {
+    document.getElementById('creatureChartContainer').innerHTML = '';
+  }
+  
+  // Show modal
+  creatureModal.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function hideCreatureModal() {
+  creatureModal.classList.remove('show');
+  document.body.style.overflow = '';
+  // Remove tooltip when modal is closed
+  d3.selectAll('.chart-tooltip').remove();
+}
+
+// Close modal when clicking the X
+if (modalClose) {
+  modalClose.addEventListener('click', hideCreatureModal);
+}
+
+// Close modal when clicking outside
+creatureModal.addEventListener('click', (e) => {
+  if (e.target === creatureModal) {
+    hideCreatureModal();
+  }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && creatureModal.classList.contains('show')) {
+    hideCreatureModal();
+  }
+});
+
+// Chart rendering functions
+function renderCreatureChart(chartConfig) {
+  const container = document.getElementById('creatureChartContainer');
+  container.innerHTML = '';
+  
+  // Remove existing tooltip if any
+  d3.selectAll('.chart-tooltip').remove();
+  
+  // Create tooltip element
+  const tooltip = d3.select('body').append('div')
+    .attr('class', 'chart-tooltip')
+    .style('opacity', 0);
+  
+  // Get actual container dimensions
+  const containerWidth = container.clientWidth || 800;
+  const containerHeight = container.clientHeight || 450;
+  
+  // Use most of the container space, leaving room for padding
+  const width = containerWidth - 40;
+  const height = containerHeight - 40;
+  const margin = { top: 50, right: 30, bottom: 60, left: 60 };
+  const chartWidth = width - margin.left - margin.right;
+  const chartHeight = height - margin.top - margin.bottom;
+  
+  const svg = d3.select(container)
+    .append('svg')
+    .attr('class', 'creature-chart')
+    .attr('width', width)
+    .attr('height', height);
+  
+  const g = svg.append('g')
+    .attr('transform', `translate(${margin.left},${margin.top})`);
+  
+  // Add title
+  svg.append('text')
+    .attr('class', 'chart-title')
+    .attr('x', width / 2)
+    .attr('y', 25)
+    .text(chartConfig.title);
+  
+  // Store tooltip reference for chart functions
+  g.tooltip = tooltip;
+  
+  switch(chartConfig.type) {
+    case 'activity':
+      renderActivityChart(g, chartConfig.data, chartWidth, chartHeight);
+      break;
+    case 'depthDistribution':
+      renderDepthDistributionChart(g, chartConfig.data, chartWidth, chartHeight);
+      break;
+    case 'depthDistributionLine':
+      renderDepthDistributionLineChart(g, chartConfig.data, chartWidth, chartHeight);
+      break;
+    case 'temperatureTolerance':
+      renderTemperatureToleranceChart(g, chartConfig.data, chartWidth, chartHeight);
+      break;
+    case 'depthDive':
+      renderDepthDiveChart(g, chartConfig.data, chartWidth, chartHeight);
+      break;
+    case 'pressureTolerance':
+      renderPressureToleranceChart(g, chartConfig.data, chartWidth, chartHeight);
+      break;
+    case 'pressureToleranceLine':
+      renderPressureToleranceLineChart(g, chartConfig.data, chartWidth, chartHeight);
+      break;
+    case 'threatRadar':
+      renderThreatRadarChart(g, chartConfig.data, chartWidth, chartHeight);
+      break;
+    case 'temperaturePressure':
+      renderTemperaturePressureChart(g, chartConfig.data, chartWidth, chartHeight);
+      break;
+    case 'temperatureRange':
+      renderTemperatureRangeChart(g, chartConfig.data, chartWidth, chartHeight);
+      break;
+    case 'depthRange':
+      renderDepthRangeChart(g, chartConfig.data, chartWidth, chartHeight);
+      break;
+    case 'populationDensity':
+      renderPopulationDensityChart(g, chartConfig.data, chartWidth, chartHeight);
+      break;
+    case 'pressureSurvival':
+      renderPressureSurvivalChart(g, chartConfig.data, chartWidth, chartHeight);
+      break;
+    case 'extremeConditions':
+      renderExtremeConditionsChart(g, chartConfig.data, chartWidth, chartHeight);
+      break;
+    case 'donut':
+      renderDonutChart(g, chartConfig.data, chartWidth, chartHeight);
+      break;
+  }
+}
+
+// Activity Chart (24-hour activity pattern)
+function renderActivityChart(g, data, width, height) {
+  const tooltip = g.tooltip;
+  const minX = d3.min(data, d => d.hour);
+  const maxX = d3.max(data, d => d.hour);
+  
+  // Adjust domain: if minX > 0, start from minX (not 0) to better utilize chart space
+  // Add small padding to prevent axis overflow
+  const padding = (maxX - minX) * 0.05;
+  const xDomainMin = minX > 0 ? Math.max(0, minX - padding) : (minX < 0 ? minX - padding : 0);
+  const xDomainMax = maxX + padding;
+  const x = d3.scaleLinear()
+    .domain([xDomainMin, xDomainMax])
+    .range([0, width]);
+  
+  // Calculate offset: if minX < 0, position y-axis at x=0; if minX > 0, y-axis at left edge
+  const xOffset = minX < 0 ? x(0) : 0;
+  
+  const y = d3.scaleLinear()
+    .domain([0, 100])
+    .range([height, 0]);
+  
+  // Grid lines
+  g.selectAll('.grid')
+    .data(d3.range(0, 101, 20))
+    .enter().append('line')
+    .attr('class', 'chart-grid')
+    .attr('x1', 0)
+    .attr('x2', width)
+    .attr('y1', d => y(d))
+    .attr('y2', d => y(d));
+  
+  // Area
+  const area = d3.area()
+    .x(d => x(d.hour))
+    .y0(height)
+    .y1(d => y(d.activity))
+    .curve(d3.curveMonotoneX);
+  
+  g.append('path')
+    .datum(data)
+    .attr('fill', 'rgba(0, 255, 255, 0.2)')
+    .attr('stroke', '#00ffff')
+    .attr('stroke-width', 2)
+    .attr('d', area)
+    .style('cursor', 'pointer')
+    .on('mouseover', function() {
+      d3.select(this).attr('stroke-width', 4);
+    })
+    .on('mouseout', function() {
+      d3.select(this).attr('stroke-width', 2);
+    });
+  
+  // Line
+  const line = d3.line()
+    .x(d => x(d.hour))
+    .y(d => y(d.activity))
+    .curve(d3.curveMonotoneX);
+  
+  g.append('path')
+    .datum(data)
+    .attr('fill', 'none')
+    .attr('stroke', '#00ffff')
+    .attr('stroke-width', 3)
+    .attr('d', line)
+    .style('cursor', 'pointer');
+  
+  // Dots with interactions
+  g.selectAll('.dot')
+    .data(data)
+    .enter().append('circle')
+    .attr('class', 'dot')
+    .attr('cx', d => x(d.hour))
+    .attr('cy', d => y(d.activity))
+    .attr('r', 5)
+    .attr('fill', '#00ffff')
+    .attr('stroke', '#fff')
+    .attr('stroke-width', 2)
+    .style('cursor', 'pointer')
+    .on('mouseover', function(event, d) {
+      d3.select(this)
+        .attr('r', 8)
+        .attr('fill', '#00ffff')
+        .attr('stroke', '#fff')
+        .attr('stroke-width', 3);
+      tooltip.transition().duration(200).style('opacity', 1);
+      tooltip.html(`${d.hour}hr: ${d.activity}%`)
+        .style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mousemove', function(event) {
+      tooltip.style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mouseout', function() {
+      d3.select(this)
+        .attr('r', 5)
+        .attr('stroke-width', 2);
+      tooltip.transition().duration(200).style('opacity', 0);
+    });
+  
+  // Axes - adjust x-axis position if data exceeds 0
+  const xAxis = d3.axisBottom(x).ticks(12).tickFormat(d => d + 'hr');
+  const yAxis = d3.axisLeft(y).ticks(5);
+  
+  g.append('g')
+    .attr('class', 'chart-axis')
+    .attr('transform', `translate(${xOffset},${height})`)
+    .call(xAxis)
+    .selectAll('text')
+    .attr('class', 'chart-axis-label');
+  
+  g.append('g')
+    .attr('class', 'chart-axis')
+    .attr('transform', `translate(${xOffset},0)`)
+    .call(yAxis)
+    .selectAll('text')
+    .attr('class', 'chart-axis-label');
+  
+  g.append('text')
+    .attr('class', 'chart-axis-label')
+    .attr('transform', `rotate(-90) translate(${-height / 2},${-35 - xOffset})`)
+    .text('Activity Level (%)');
+}
+
+// Depth Distribution Chart
+function renderDepthDistributionChart(g, data, width, height) {
+  const tooltip = g.tooltip;
+  const minX = d3.min(data, d => d.depth);
+  const maxX = d3.max(data, d => d.depth);
+  
+  // Always start x-axis from 0 for depth distribution charts
+  // Calculate bar width in data space to add left padding and prevent bar overflow
+  const dataRange = maxX - minX;
+  const barWidthInDataSpace = dataRange / Math.max(1, data.length - 1);
+  const leftPadding = barWidthInDataSpace / 2; // Half bar width to prevent left overflow
+  const rightPadding = (maxX - minX) * 0.05;
+  // For Giant Oceanic Manta Ray: ensure x-axis starts from 0, but add left padding for bar
+  const xDomainMin = minX >= 0 ? -leftPadding : (minX - leftPadding);
+  const xDomainMax = maxX + rightPadding;
+  const x = d3.scaleLinear()
+    .domain([xDomainMin, xDomainMax])
+    .range([0, width]);
+  
+  // Calculate where x=0 is in the chart, and use that as offset for axes
+  // When we have left padding, position y-axis at x=0 so axis shows 0
+  const zeroPosition = x(0);
+  const xOffset = (minX >= 0 && leftPadding > 0) ? zeroPosition : (minX < 0 ? zeroPosition : 0);
+  
+  const y = d3.scaleLinear()
+    .domain([0, 100])
+    .range([height, 0]);
+  
+  // Bars with interactions
+  const barWidth = width / data.length;
+  g.selectAll('.bar')
+    .data(data)
+    .enter().append('rect')
+    .attr('class', 'bar')
+    .attr('x', d => x(d.depth) - barWidth / 2)
+    .attr('y', d => y(d.density))
+    .attr('width', barWidth - 2)
+    .attr('height', d => height - y(d.density))
+    .attr('fill', d => d3.interpolateViridis(d.density / 100))
+    .attr('stroke', '#00ffff')
+    .attr('stroke-width', 1)
+    .attr('opacity', 0.8)
+    .style('cursor', 'pointer')
+    .on('mouseover', function(event, d) {
+      d3.select(this)
+        .attr('opacity', 1)
+        .attr('stroke-width', 3)
+        .attr('stroke', '#00ffff');
+      tooltip.transition().duration(200).style('opacity', 1);
+      tooltip.html(`Depth: ${d.depth}m<br>Density: ${d.density}%`)
+        .style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mousemove', function(event) {
+      tooltip.style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mouseout', function() {
+      d3.select(this)
+        .attr('opacity', 0.8)
+        .attr('stroke-width', 1);
+      tooltip.transition().duration(200).style('opacity', 0);
+    });
+  
+  // Axes - adjust x-axis position if data exceeds 0
+  const xAxis = d3.axisBottom(x).ticks(10);
+  const yAxis = d3.axisLeft(y).ticks(5);
+  
+  g.append('g')
+    .attr('class', 'chart-axis')
+    .attr('transform', `translate(${xOffset},${height})`)
+    .call(xAxis)
+    .selectAll('text')
+    .attr('class', 'chart-axis-label');
+  
+  g.append('g')
+    .attr('class', 'chart-axis')
+    .attr('transform', `translate(${xOffset},0)`)
+    .call(yAxis)
+    .selectAll('text')
+    .attr('class', 'chart-axis-label');
+  
+  g.append('text')
+    .attr('class', 'chart-axis-label')
+    .attr('transform', `rotate(-90) translate(${-height / 2},${-35 - xOffset})`)
+    .text('Density (%)');
+  
+  g.append('text')
+    .attr('class', 'chart-axis-label')
+    .attr('x', width / 2)
+    .attr('y', height + 40)
+    .text('Depth (m)');
+}
+
+// Depth Distribution Line Chart
+function renderDepthDistributionLineChart(g, data, width, height) {
+  const tooltip = g.tooltip;
+  const minX = d3.min(data, d => d.depth);
+  const maxX = d3.max(data, d => d.depth);
+  
+  // Always start x-axis from 0 for depth distribution charts
+  const padding = (maxX - minX) * 0.05;
+  const xDomainMin = minX >= 0 ? 0 : (minX - padding);
+  const xDomainMax = maxX + padding;
+  const x = d3.scaleLinear()
+    .domain([xDomainMin, xDomainMax])
+    .range([0, width]);
+  
+  const xOffset = minX < 0 ? x(0) : 0;
+  
+  const y = d3.scaleLinear()
+    .domain([0, 100])
+    .range([height, 0]);
+  
+  // Grid lines
+  g.selectAll('.grid')
+    .data(d3.range(0, 101, 20))
+    .enter().append('line')
+    .attr('class', 'chart-grid')
+    .attr('x1', 0)
+    .attr('x2', width)
+    .attr('y1', d => y(d))
+    .attr('y2', d => y(d));
+  
+  // Area
+  const area = d3.area()
+    .x(d => x(d.depth))
+    .y0(height)
+    .y1(d => y(d.density))
+    .curve(d3.curveMonotoneX);
+  
+  g.append('path')
+    .datum(data)
+    .attr('fill', 'rgba(0, 255, 255, 0.2)')
+    .attr('stroke', '#00ffff')
+    .attr('stroke-width', 2)
+    .attr('d', area)
+    .style('cursor', 'pointer')
+    .on('mouseover', function() {
+      d3.select(this).attr('stroke-width', 4);
+    })
+    .on('mouseout', function() {
+      d3.select(this).attr('stroke-width', 2);
+    });
+  
+  // Line
+  const line = d3.line()
+    .x(d => x(d.depth))
+    .y(d => y(d.density))
+    .curve(d3.curveMonotoneX);
+  
+  g.append('path')
+    .datum(data)
+    .attr('fill', 'none')
+    .attr('stroke', '#00ffff')
+    .attr('stroke-width', 3)
+    .attr('d', line)
+    .style('cursor', 'pointer');
+  
+  // Interactive dots
+  g.selectAll('.dot')
+    .data(data)
+    .enter().append('circle')
+    .attr('class', 'dot')
+    .attr('cx', d => x(d.depth))
+    .attr('cy', d => y(d.density))
+    .attr('r', 4)
+    .attr('fill', '#00ffff')
+    .attr('stroke', '#fff')
+    .attr('stroke-width', 2)
+    .style('cursor', 'pointer')
+    .on('mouseover', function(event, d) {
+      d3.select(this)
+        .attr('r', 7)
+        .attr('fill', '#00ffff')
+        .attr('stroke-width', 3);
+      tooltip.transition().duration(200).style('opacity', 1);
+      tooltip.html(`Depth: ${d.depth}m<br>Density: ${d.density}%`)
+        .style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mousemove', function(event) {
+      tooltip.style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mouseout', function() {
+      d3.select(this)
+        .attr('r', 4)
+        .attr('stroke-width', 2);
+      tooltip.transition().duration(200).style('opacity', 0);
+    });
+  
+  // Axes
+  const xAxis = d3.axisBottom(x).ticks(10);
+  const yAxis = d3.axisLeft(y).ticks(5);
+  
+  g.append('g')
+    .attr('class', 'chart-axis')
+    .attr('transform', `translate(${xOffset},${height})`)
+    .call(xAxis)
+    .selectAll('text')
+    .attr('class', 'chart-axis-label');
+  
+  g.append('g')
+    .attr('class', 'chart-axis')
+    .attr('transform', `translate(${xOffset},0)`)
+    .call(yAxis)
+    .selectAll('text')
+    .attr('class', 'chart-axis-label');
+  
+  g.append('text')
+    .attr('class', 'chart-axis-label')
+    .attr('transform', `rotate(-90) translate(${-height / 2},${-35 - xOffset})`)
+    .text('Density (%)');
+  
+  g.append('text')
+    .attr('class', 'chart-axis-label')
+    .attr('x', width / 2)
+    .attr('y', height + 40)
+    .text('Depth (m)');
+}
+
+// Temperature Tolerance Chart
+function renderTemperatureToleranceChart(g, data, width, height) {
+  const tooltip = g.tooltip;
+  const minX = d3.min(data, d => d.temp);
+  const maxX = d3.max(data, d => d.temp);
+  
+  // Adjust domain: if minX > 0, start from minX (not 0) to better utilize chart space
+  // Add small padding to prevent axis overflow
+  const padding = (maxX - minX) * 0.05;
+  const xDomainMin = minX > 0 ? Math.max(0, minX - padding) : (minX < 0 ? minX - padding : 0);
+  const xDomainMax = maxX + padding;
+  const x = d3.scaleLinear()
+    .domain([xDomainMin, xDomainMax])
+    .range([0, width]);
+  
+  // Calculate offset: if minX < 0, position y-axis at x=0; if minX > 0, y-axis at left edge
+  const xOffset = minX < 0 ? x(0) : 0;
+  
+  const y = d3.scaleLinear()
+    .domain([0, 100])
+    .range([height, 0]);
+  
+  // Area
+  const area = d3.area()
+    .x(d => x(d.temp))
+    .y0(height)
+    .y1(d => y(d.health))
+    .curve(d3.curveMonotoneX);
+  
+  g.append('path')
+    .datum(data)
+    .attr('fill', 'rgba(255, 165, 0, 0.3)')
+    .attr('stroke', '#ffa500')
+    .attr('stroke-width', 2)
+    .attr('d', area)
+    .style('cursor', 'pointer')
+    .on('mouseover', function() {
+      d3.select(this).attr('stroke-width', 4);
+    })
+    .on('mouseout', function() {
+      d3.select(this).attr('stroke-width', 2);
+    });
+  
+  // Line
+  const line = d3.line()
+    .x(d => x(d.temp))
+    .y(d => y(d.health))
+    .curve(d3.curveMonotoneX);
+  
+  g.append('path')
+    .datum(data)
+    .attr('fill', 'none')
+    .attr('stroke', '#ffa500')
+    .attr('stroke-width', 3)
+    .attr('d', line)
+    .style('cursor', 'pointer');
+  
+  // Optimal zone highlight
+  const optimal = data.filter(d => d.health >= 90);
+  if (optimal.length > 0) {
+    g.append('rect')
+      .attr('x', x(optimal[0].temp))
+      .attr('y', 0)
+      .attr('width', x(optimal[optimal.length - 1].temp) - x(optimal[0].temp))
+      .attr('height', height)
+      .attr('fill', 'rgba(0, 255, 0, 0.1)')
+      .attr('stroke', '#00ff00')
+      .attr('stroke-width', 1)
+      .attr('stroke-dasharray', '5,5');
+  }
+  
+  // Interactive dots
+  g.selectAll('.dot')
+    .data(data)
+    .enter().append('circle')
+    .attr('class', 'dot')
+    .attr('cx', d => x(d.temp))
+    .attr('cy', d => y(d.health))
+    .attr('r', 4)
+    .attr('fill', '#ffa500')
+    .attr('stroke', '#fff')
+    .attr('stroke-width', 2)
+    .style('cursor', 'pointer')
+    .on('mouseover', function(event, d) {
+      d3.select(this)
+        .attr('r', 7)
+        .attr('fill', '#ffa500')
+        .attr('stroke-width', 3);
+      tooltip.transition().duration(200).style('opacity', 1);
+      tooltip.html(`Temperature: ${d.temp}°C<br>Health: ${d.health}%`)
+        .style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mousemove', function(event) {
+      tooltip.style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mouseout', function() {
+      d3.select(this)
+        .attr('r', 4)
+        .attr('stroke-width', 2);
+      tooltip.transition().duration(200).style('opacity', 0);
+    });
+  
+  // Axes - adjust x-axis position if data exceeds 0
+  const xAxis = d3.axisBottom(x).ticks(7);
+  const yAxis = d3.axisLeft(y).ticks(5);
+  
+  g.append('g')
+    .attr('class', 'chart-axis')
+    .attr('transform', `translate(${xOffset},${height})`)
+    .call(xAxis)
+    .selectAll('text')
+    .attr('class', 'chart-axis-label');
+  
+  g.append('g')
+    .attr('class', 'chart-axis')
+    .attr('transform', `translate(${xOffset},0)`)
+    .call(yAxis)
+    .selectAll('text')
+    .attr('class', 'chart-axis-label');
+  
+  g.append('text')
+    .attr('class', 'chart-axis-label')
+    .attr('transform', `rotate(-90) translate(${-height / 2},${-35 - xOffset})`)
+    .text('Health (%)');
+}
+
+// Depth Dive Chart
+function renderDepthDiveChart(g, data, width, height) {
+  const tooltip = g.tooltip;
+  const minX = d3.min(data, d => d.time);
+  const maxX = d3.max(data, d => d.time);
+  
+  // Adjust domain: if minX > 0, start from minX (not 0) to better utilize chart space
+  // Add small padding to prevent axis overflow
+  const padding = (maxX - minX) * 0.05;
+  const xDomainMin = minX > 0 ? Math.max(0, minX - padding) : (minX < 0 ? minX - padding : 0);
+  const xDomainMax = maxX + padding;
+  const x = d3.scaleLinear()
+    .domain([xDomainMin, xDomainMax])
+    .range([0, width]);
+  
+  // Calculate offset: if minX < 0, position y-axis at x=0; if minX > 0, y-axis at left edge
+  const xOffset = minX < 0 ? x(0) : 0;
+  
+  const y = d3.scaleLinear()
+    .domain([0, 1000])
+    .range([height, 0]);
+  
+  // Area
+  const area = d3.area()
+    .x(d => x(d.time))
+    .y0(height)
+    .y1(d => y(d.depth))
+    .curve(d3.curveMonotoneX);
+  
+  g.append('path')
+    .datum(data)
+    .attr('fill', 'rgba(0, 255, 255, 0.2)')
+    .attr('stroke', '#00ffff')
+    .attr('stroke-width', 2)
+    .attr('d', area)
+    .style('cursor', 'pointer')
+    .on('mouseover', function() {
+      d3.select(this).attr('stroke-width', 4);
+    })
+    .on('mouseout', function() {
+      d3.select(this).attr('stroke-width', 2);
+    });
+  
+  // Line
+  const line = d3.line()
+    .x(d => x(d.time))
+    .y(d => y(d.depth))
+    .curve(d3.curveMonotoneX);
+  
+  g.append('path')
+    .datum(data)
+    .attr('fill', 'none')
+    .attr('stroke', '#00ffff')
+    .attr('stroke-width', 3)
+    .attr('d', line)
+    .style('cursor', 'pointer');
+  
+  // Interactive dots
+  g.selectAll('.dot')
+    .data(data)
+    .enter().append('circle')
+    .attr('class', 'dot')
+    .attr('cx', d => x(d.time))
+    .attr('cy', d => y(d.depth))
+    .attr('r', 4)
+    .attr('fill', '#00ffff')
+    .attr('stroke', '#fff')
+    .attr('stroke-width', 2)
+    .style('cursor', 'pointer')
+    .on('mouseover', function(event, d) {
+      d3.select(this)
+        .attr('r', 7)
+        .attr('fill', '#00ffff')
+        .attr('stroke-width', 3);
+      tooltip.transition().duration(200).style('opacity', 1);
+      tooltip.html(`Time: ${d.time}min<br>Depth: ${d.depth}m`)
+        .style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mousemove', function(event) {
+      tooltip.style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mouseout', function() {
+      d3.select(this)
+        .attr('r', 4)
+        .attr('stroke-width', 2);
+      tooltip.transition().duration(200).style('opacity', 0);
+    });
+  
+  // Axes - adjust x-axis position if data exceeds 0
+  const xAxis = d3.axisBottom(x).ticks(10);
+  const yAxis = d3.axisLeft(y).ticks(5);
+  
+  g.append('g')
+    .attr('class', 'chart-axis')
+    .attr('transform', `translate(${xOffset},${height})`)
+    .call(xAxis)
+    .selectAll('text')
+    .attr('class', 'chart-axis-label');
+  
+  g.append('g')
+    .attr('class', 'chart-axis')
+    .attr('transform', `translate(${xOffset},0)`)
+    .call(yAxis)
+    .selectAll('text')
+    .attr('class', 'chart-axis-label');
+  
+  g.append('text')
+    .attr('class', 'chart-axis-label')
+    .attr('transform', `rotate(-90) translate(${-height / 2},${-35 - xOffset})`)
+    .text('Depth (m)');
+}
+
+// Pressure Tolerance Chart
+function renderPressureToleranceChart(g, data, width, height) {
+  const tooltip = g.tooltip;
+  const minX = d3.min(data, d => d.pressure);
+  const maxX = d3.max(data, d => d.pressure);
+  
+  // For Deepwater Shark: ensure x-axis starts from 0
+  // Add small padding to prevent axis overflow
+  const padding = (maxX - minX) * 0.05;
+  // Always start x-axis from 0 for pressure tolerance charts
+  const xDomainMin = minX >= 0 ? 0 : (minX - padding);
+  const xDomainMax = maxX + padding;
+  const x = d3.scaleLinear()
+    .domain([xDomainMin, xDomainMax])
+    .range([0, width]);
+  
+  // Calculate offset: when minX >= 0, y-axis should be at the left edge (xOffset = 0)
+  // The x-axis will start from 0
+  const xOffset = minX < 0 ? x(0) : 0;
+  
+  const y = d3.scaleLinear()
+    .domain([0, 100])
+    .range([height, 0]);
+  
+  // Bars with interactions
+  const barWidth = width / data.length;
+  g.selectAll('.bar')
+    .data(data)
+    .enter().append('rect')
+    .attr('class', 'bar')
+    .attr('x', d => x(d.pressure) - barWidth / 2)
+    .attr('y', d => y(d.survival))
+    .attr('width', barWidth - 2)
+    .attr('height', d => height - y(d.survival))
+    .attr('fill', d => d3.interpolateCool(d.survival / 100))
+    .attr('stroke', '#00ffff')
+    .attr('stroke-width', 1)
+    .style('cursor', 'pointer')
+    .on('mouseover', function(event, d) {
+      d3.select(this)
+        .attr('stroke-width', 3)
+        .attr('stroke', '#00ffff');
+      tooltip.transition().duration(200).style('opacity', 1);
+      tooltip.html(`Pressure: ${d.pressure}atm<br>Survival Rate: ${d.survival}%`)
+        .style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mousemove', function(event) {
+      tooltip.style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mouseout', function() {
+      d3.select(this)
+        .attr('stroke-width', 1);
+      tooltip.transition().duration(200).style('opacity', 0);
+    });
+  
+  // Axes - adjust x-axis position if data exceeds 0
+  const xAxis = d3.axisBottom(x).ticks(6);
+  const yAxis = d3.axisLeft(y).ticks(5);
+  
+  g.append('g')
+    .attr('class', 'chart-axis')
+    .attr('transform', `translate(${xOffset},${height})`)
+    .call(xAxis)
+    .selectAll('text')
+    .attr('class', 'chart-axis-label');
+  
+  g.append('g')
+    .attr('class', 'chart-axis')
+    .attr('transform', `translate(${xOffset},0)`)
+    .call(yAxis)
+    .selectAll('text')
+    .attr('class', 'chart-axis-label');
+  
+  g.append('text')
+    .attr('class', 'chart-axis-label')
+    .attr('transform', `rotate(-90) translate(${-height / 2},${-35 - xOffset})`)
+    .text('Survival Rate (%)');
+}
+
+// Pressure Tolerance Line Chart
+function renderPressureToleranceLineChart(g, data, width, height) {
+  const tooltip = g.tooltip;
+  const minX = d3.min(data, d => d.pressure);
+  const maxX = d3.max(data, d => d.pressure);
+  
+  // Always start x-axis from 0 for pressure tolerance charts
+  const padding = (maxX - minX) * 0.05;
+  const xDomainMin = minX >= 0 ? 0 : (minX - padding);
+  const xDomainMax = maxX + padding;
+  const x = d3.scaleLinear()
+    .domain([xDomainMin, xDomainMax])
+    .range([0, width]);
+  
+  const xOffset = minX < 0 ? x(0) : 0;
+  
+  const y = d3.scaleLinear()
+    .domain([0, 100])
+    .range([height, 0]);
+  
+  // Grid lines
+  g.selectAll('.grid')
+    .data(d3.range(0, 101, 20))
+    .enter().append('line')
+    .attr('class', 'chart-grid')
+    .attr('x1', 0)
+    .attr('x2', width)
+    .attr('y1', d => y(d))
+    .attr('y2', d => y(d));
+  
+  // Area
+  const area = d3.area()
+    .x(d => x(d.pressure))
+    .y0(height)
+    .y1(d => y(d.survival))
+    .curve(d3.curveMonotoneX);
+  
+  g.append('path')
+    .datum(data)
+    .attr('fill', 'rgba(0, 255, 255, 0.2)')
+    .attr('stroke', '#00ffff')
+    .attr('stroke-width', 2)
+    .attr('d', area)
+    .style('cursor', 'pointer')
+    .on('mouseover', function() {
+      d3.select(this).attr('stroke-width', 4);
+    })
+    .on('mouseout', function() {
+      d3.select(this).attr('stroke-width', 2);
+    });
+  
+  // Line
+  const line = d3.line()
+    .x(d => x(d.pressure))
+    .y(d => y(d.survival))
+    .curve(d3.curveMonotoneX);
+  
+  g.append('path')
+    .datum(data)
+    .attr('fill', 'none')
+    .attr('stroke', '#00ffff')
+    .attr('stroke-width', 3)
+    .attr('d', line)
+    .style('cursor', 'pointer');
+  
+  // Interactive dots
+  g.selectAll('.dot')
+    .data(data)
+    .enter().append('circle')
+    .attr('class', 'dot')
+    .attr('cx', d => x(d.pressure))
+    .attr('cy', d => y(d.survival))
+    .attr('r', 4)
+    .attr('fill', '#00ffff')
+    .attr('stroke', '#fff')
+    .attr('stroke-width', 2)
+    .style('cursor', 'pointer')
+    .on('mouseover', function(event, d) {
+      d3.select(this)
+        .attr('r', 7)
+        .attr('fill', '#00ffff')
+        .attr('stroke-width', 3);
+      tooltip.transition().duration(200).style('opacity', 1);
+      tooltip.html(`Pressure: ${d.pressure}atm<br>Survival Rate: ${d.survival}%`)
+        .style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mousemove', function(event) {
+      tooltip.style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mouseout', function() {
+      d3.select(this)
+        .attr('r', 4)
+        .attr('stroke-width', 2);
+      tooltip.transition().duration(200).style('opacity', 0);
+    });
+  
+  // Axes
+  const xAxis = d3.axisBottom(x).ticks(6);
+  const yAxis = d3.axisLeft(y).ticks(5);
+  
+  g.append('g')
+    .attr('class', 'chart-axis')
+    .attr('transform', `translate(${xOffset},${height})`)
+    .call(xAxis)
+    .selectAll('text')
+    .attr('class', 'chart-axis-label');
+  
+  g.append('g')
+    .attr('class', 'chart-axis')
+    .attr('transform', `translate(${xOffset},0)`)
+    .call(yAxis)
+    .selectAll('text')
+    .attr('class', 'chart-axis-label');
+  
+  g.append('text')
+    .attr('class', 'chart-axis-label')
+    .attr('transform', `rotate(-90) translate(${-height / 2},${-35 - xOffset})`)
+    .text('Survival Rate (%)');
+  
+  g.append('text')
+    .attr('class', 'chart-axis-label')
+    .attr('x', width / 2)
+    .attr('y', height + 40)
+    .text('Pressure (atm)');
+}
+
+// Threat Radar Chart
+function renderThreatRadarChart(g, data, width, height) {
+  const tooltip = g.tooltip;
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const radius = Math.min(width, height) / 2 - 50;
+  const angleSlice = (Math.PI * 2) / data.length;
+  
+  // Draw circles
+  for (let i = 1; i <= 5; i++) {
+    g.append('circle')
+      .attr('cx', centerX)
+      .attr('cy', centerY)
+      .attr('r', (radius / 5) * i)
+      .attr('fill', 'none')
+      .attr('stroke', 'rgba(0, 255, 255, 0.2)')
+      .attr('stroke-width', 1);
+  }
+  
+  // Draw axes
+  data.forEach((d, i) => {
+    const angle = i * angleSlice - Math.PI / 2;
+    const x = centerX + Math.cos(angle) * radius;
+    const y = centerY + Math.sin(angle) * radius;
+    
+    g.append('line')
+      .attr('x1', centerX)
+      .attr('y1', centerY)
+      .attr('x2', x)
+      .attr('y2', y)
+      .attr('stroke', 'rgba(0, 255, 255, 0.3)')
+      .attr('stroke-width', 1);
+    
+    // Labels
+    const labelX = centerX + Math.cos(angle) * (radius + 25);
+    const labelY = centerY + Math.sin(angle) * (radius + 25);
+    g.append('text')
+      .attr('x', labelX)
+      .attr('y', labelY)
+      .attr('class', 'chart-axis-label')
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '11px')
+      .text(d.threat);
+  });
+  
+  // Draw polygon
+  const points = data.map((d, i) => {
+    const angle = i * angleSlice - Math.PI / 2;
+    const r = (d.value / 100) * radius;
+    return {
+      x: centerX + Math.cos(angle) * r,
+      y: centerY + Math.sin(angle) * r,
+      data: d
+    };
+  });
+  
+  const line = d3.line()
+    .x(d => d.x)
+    .y(d => d.y)
+    .curve(d3.curveLinearClosed);
+  
+  g.append('path')
+    .datum(points)
+    .attr('fill', 'rgba(255, 0, 0, 0.3)')
+    .attr('stroke', '#ff6b6b')
+    .attr('stroke-width', 2)
+    .attr('d', line)
+    .style('cursor', 'pointer')
+    .on('mouseover', function() {
+      d3.select(this).attr('stroke-width', 4);
+    })
+    .on('mouseout', function() {
+      d3.select(this).attr('stroke-width', 2);
+    });
+  
+  // Draw interactive points
+  points.forEach((p, i) => {
+    g.append('circle')
+      .attr('cx', p.x)
+      .attr('cy', p.y)
+      .attr('r', 5)
+      .attr('fill', '#ff6b6b')
+      .attr('stroke', '#fff')
+      .attr('stroke-width', 2)
+      .style('cursor', 'pointer')
+      .on('mouseover', function(event) {
+        d3.select(this)
+          .attr('r', 8)
+          .attr('fill', '#ff6b6b')
+          .attr('stroke-width', 3);
+        tooltip.transition().duration(200).style('opacity', 1);
+        tooltip.html(`${p.data.threat}<br>Threat Value: ${p.data.value}%`)
+          .style('left', (event.pageX + 10) + 'px')
+          .style('top', (event.pageY - 10) + 'px');
+      })
+      .on('mousemove', function(event) {
+        tooltip.style('left', (event.pageX + 10) + 'px')
+          .style('top', (event.pageY - 10) + 'px');
+      })
+      .on('mouseout', function() {
+        d3.select(this)
+          .attr('r', 5)
+          .attr('stroke-width', 2);
+        tooltip.transition().duration(200).style('opacity', 0);
+      });
+  });
+}
+
+// Temperature Pressure Chart
+function renderTemperaturePressureChart(g, data, width, height) {
+  const tooltip = g.tooltip;
+  const minX = d3.min(data, d => d.temp);
+  const maxX = d3.max(data, d => d.temp);
+  
+  // Adjust domain: if minX > 0, start from minX (not 0) to better utilize chart space
+  // Add small padding to prevent axis overflow
+  const padding = (maxX - minX) * 0.05;
+  const xDomainMin = minX > 0 ? Math.max(0, minX - padding) : (minX < 0 ? minX - padding : 0);
+  const xDomainMax = maxX + padding;
+  const x = d3.scaleLinear()
+    .domain([xDomainMin, xDomainMax])
+    .range([0, width]);
+  
+  // Calculate offset: if minX < 0, position y-axis at x=0; if minX > 0, y-axis at left edge
+  const xOffset = minX < 0 ? x(0) : 0;
+  
+  const y = d3.scaleLinear()
+    .domain(d3.extent(data, d => d.pressure))
+    .range([height, 0]);
+  
+  // Color scale
+  const colorScale = d3.scaleSequential(d3.interpolateViridis)
+    .domain(d3.extent(data, d => d.survival));
+  
+  // Draw interactive points
+  g.selectAll('.point')
+    .data(data)
+    .enter().append('circle')
+    .attr('class', 'point')
+    .attr('cx', d => x(d.temp))
+    .attr('cy', d => y(d.pressure))
+    .attr('r', d => 6 + (d.survival / 15))
+    .attr('fill', d => colorScale(d.survival))
+    .attr('stroke', '#fff')
+    .attr('stroke-width', 2)
+    .attr('opacity', 0.85)
+    .style('cursor', 'pointer')
+    .on('mouseover', function(event, d) {
+      d3.select(this)
+        .attr('r', d => 10 + (d.survival / 15))
+        .attr('stroke-width', 3)
+        .attr('opacity', 1);
+      tooltip.transition().duration(200).style('opacity', 1);
+      tooltip.html(`Temperature: ${d.temp}°C<br>Pressure: ${d.pressure}atm<br>Survival Rate: ${d.survival}%`)
+        .style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mousemove', function(event) {
+      tooltip.style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mouseout', function(event, d) {
+      d3.select(this)
+        .attr('r', d => 6 + (d.survival / 15))
+        .attr('stroke-width', 2)
+        .attr('opacity', 0.85);
+      tooltip.transition().duration(200).style('opacity', 0);
+    });
+  
+  // Axes - adjust x-axis position if data exceeds 0
+  const xAxis = d3.axisBottom(x).ticks(7);
+  const yAxis = d3.axisLeft(y).ticks(5);
+  
+  g.append('g')
+    .attr('class', 'chart-axis')
+    .attr('transform', `translate(${xOffset},${height})`)
+    .call(xAxis)
+    .selectAll('text')
+    .attr('class', 'chart-axis-label');
+  
+  g.append('g')
+    .attr('class', 'chart-axis')
+    .attr('transform', `translate(${xOffset},0)`)
+    .call(yAxis)
+    .selectAll('text')
+    .attr('class', 'chart-axis-label');
+  
+  g.append('text')
+    .attr('class', 'chart-axis-label')
+    .attr('x', width / 2)
+    .attr('y', height + 40)
+    .text('Temperature (°C)');
+  
+  g.append('text')
+    .attr('class', 'chart-axis-label')
+    .attr('transform', `rotate(-90) translate(${-height / 2},${-35 - xOffset})`)
+    .text('Pressure (atm)');
+}
+
+// Temperature Range Chart
+function renderTemperatureRangeChart(g, data, width, height) {
+  const tooltip = g.tooltip;
+  const minX = d3.min(data, d => d.temp);
+  const maxX = d3.max(data, d => d.temp);
+  
+  // Adjust domain: if minX > 0, start from minX (not 0) to better utilize chart space
+  // Add small padding to prevent axis overflow
+  const padding = (maxX - minX) * 0.05;
+  const xDomainMin = minX > 0 ? Math.max(0, minX - padding) : (minX < 0 ? minX - padding : 0);
+  const xDomainMax = maxX + padding;
+  const x = d3.scaleLinear()
+    .domain([xDomainMin, xDomainMax])
+    .range([0, width]);
+  
+  // Calculate offset: if minX < 0, position y-axis at x=0; if minX > 0, y-axis at left edge
+  const xOffset = minX < 0 ? x(0) : 0;
+  
+  const y = d3.scaleLinear()
+    .domain([0, 100])
+    .range([height, 0]);
+  
+  // Area
+  const area = d3.area()
+    .x(d => x(d.temp))
+    .y0(height)
+    .y1(d => y(d.viability))
+    .curve(d3.curveMonotoneX);
+  
+  g.append('path')
+    .datum(data)
+    .attr('fill', 'rgba(255, 100, 0, 0.3)')
+    .attr('stroke', '#ff6400')
+    .attr('stroke-width', 2)
+    .attr('d', area)
+    .style('cursor', 'pointer')
+    .on('mouseover', function() {
+      d3.select(this).attr('stroke-width', 4);
+    })
+    .on('mouseout', function() {
+      d3.select(this).attr('stroke-width', 2);
+    });
+  
+  // Line
+  const line = d3.line()
+    .x(d => x(d.temp))
+    .y(d => y(d.viability))
+    .curve(d3.curveMonotoneX);
+  
+  g.append('path')
+    .datum(data)
+    .attr('fill', 'none')
+    .attr('stroke', '#ff6400')
+    .attr('stroke-width', 3)
+    .attr('d', line)
+    .style('cursor', 'pointer');
+  
+  // Interactive dots
+  g.selectAll('.dot')
+    .data(data)
+    .enter().append('circle')
+    .attr('class', 'dot')
+    .attr('cx', d => x(d.temp))
+    .attr('cy', d => y(d.viability))
+    .attr('r', 4)
+    .attr('fill', '#ff6400')
+    .attr('stroke', '#fff')
+    .attr('stroke-width', 2)
+    .style('cursor', 'pointer')
+    .on('mouseover', function(event, d) {
+      d3.select(this)
+        .attr('r', 7)
+        .attr('fill', '#ff6400')
+        .attr('stroke-width', 3);
+      tooltip.transition().duration(200).style('opacity', 1);
+      tooltip.html(`Temperature: ${d.temp}°C<br>Viability: ${d.viability}%`)
+        .style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mousemove', function(event) {
+      tooltip.style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mouseout', function() {
+      d3.select(this)
+        .attr('r', 4)
+        .attr('stroke-width', 2);
+      tooltip.transition().duration(200).style('opacity', 0);
+    });
+  
+  // Axes - adjust x-axis position if data exceeds 0
+  const xAxis = d3.axisBottom(x).ticks(6);
+  const yAxis = d3.axisLeft(y).ticks(5);
+  
+  g.append('g')
+    .attr('class', 'chart-axis')
+    .attr('transform', `translate(${xOffset},${height})`)
+    .call(xAxis)
+    .selectAll('text')
+    .attr('class', 'chart-axis-label');
+  
+  g.append('g')
+    .attr('class', 'chart-axis')
+    .attr('transform', `translate(${xOffset},0)`)
+    .call(yAxis)
+    .selectAll('text')
+    .attr('class', 'chart-axis-label');
+  
+  g.append('text')
+    .attr('class', 'chart-axis-label')
+    .attr('transform', `rotate(-90) translate(${-height / 2},${-35 - xOffset})`)
+    .text('Viability (%)');
+}
+
+// Depth Range Chart
+function renderDepthRangeChart(g, data, width, height) {
+  const tooltip = g.tooltip;
+  const minX = d3.min(data, d => d.depth);
+  const maxX = d3.max(data, d => d.depth);
+  
+  // Adjust domain: if minX > 0, start from minX (not 0) to better utilize chart space
+  // Add small padding to prevent axis overflow
+  const padding = (maxX - minX) * 0.05;
+  const xDomainMin = minX > 0 ? Math.max(0, minX - padding) : (minX < 0 ? minX - padding : 0);
+  const xDomainMax = maxX + padding;
+  const x = d3.scaleLinear()
+    .domain([xDomainMin, xDomainMax])
+    .range([0, width]);
+  
+  // Calculate offset: if minX < 0, position y-axis at x=0; if minX > 0, y-axis at left edge
+  const xOffset = minX < 0 ? x(0) : 0;
+  
+  const y = d3.scaleLinear()
+    .domain([0, 100])
+    .range([height, 0]);
+  
+  // Area
+  const area = d3.area()
+    .x(d => x(d.depth))
+    .y0(height)
+    .y1(d => y(d.abundance))
+    .curve(d3.curveMonotoneX);
+  
+  g.append('path')
+    .datum(data)
+    .attr('fill', 'rgba(0, 255, 255, 0.2)')
+    .attr('stroke', '#00ffff')
+    .attr('stroke-width', 2)
+    .attr('d', area)
+    .style('cursor', 'pointer')
+    .on('mouseover', function() {
+      d3.select(this).attr('stroke-width', 4);
+    })
+    .on('mouseout', function() {
+      d3.select(this).attr('stroke-width', 2);
+    });
+  
+  // Line
+  const line = d3.line()
+    .x(d => x(d.depth))
+    .y(d => y(d.abundance))
+    .curve(d3.curveMonotoneX);
+  
+  g.append('path')
+    .datum(data)
+    .attr('fill', 'none')
+    .attr('stroke', '#00ffff')
+    .attr('stroke-width', 3)
+    .attr('d', line)
+    .style('cursor', 'pointer');
+  
+  // Interactive dots
+  g.selectAll('.dot')
+    .data(data)
+    .enter().append('circle')
+    .attr('class', 'dot')
+    .attr('cx', d => x(d.depth))
+    .attr('cy', d => y(d.abundance))
+    .attr('r', 4)
+    .attr('fill', '#00ffff')
+    .attr('stroke', '#fff')
+    .attr('stroke-width', 2)
+    .style('cursor', 'pointer')
+    .on('mouseover', function(event, d) {
+      d3.select(this)
+        .attr('r', 7)
+        .attr('fill', '#00ffff')
+        .attr('stroke-width', 3);
+      tooltip.transition().duration(200).style('opacity', 1);
+      tooltip.html(`Depth: ${d.depth}m<br>Abundance: ${d.abundance}%`)
+        .style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mousemove', function(event) {
+      tooltip.style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mouseout', function() {
+      d3.select(this)
+        .attr('r', 4)
+        .attr('stroke-width', 2);
+      tooltip.transition().duration(200).style('opacity', 0);
+    });
+  
+  // Axes - adjust x-axis position if data exceeds 0
+  const xAxis = d3.axisBottom(x).ticks(8);
+  const yAxis = d3.axisLeft(y).ticks(5);
+  
+  g.append('g')
+    .attr('class', 'chart-axis')
+    .attr('transform', `translate(${xOffset},${height})`)
+    .call(xAxis)
+    .selectAll('text')
+    .attr('class', 'chart-axis-label');
+  
+  g.append('g')
+    .attr('class', 'chart-axis')
+    .attr('transform', `translate(${xOffset},0)`)
+    .call(yAxis)
+    .selectAll('text')
+    .attr('class', 'chart-axis-label');
+  
+  g.append('text')
+    .attr('class', 'chart-axis-label')
+    .attr('transform', `rotate(-90) translate(${-height / 2},${-35 - xOffset})`)
+    .text('Abundance (%)');
+}
+
+// Population Density Chart
+function renderPopulationDensityChart(g, data, width, height) {
+  const tooltip = g.tooltip;
+  const minX = d3.min(data, d => d.distance);
+  const maxX = d3.max(data, d => d.distance);
+  
+  // Adjust domain: if minX > 0, start from minX (not 0) to better utilize chart space
+  // Add small padding to prevent axis overflow
+  const padding = (maxX - minX) * 0.05;
+  const xDomainMin = minX > 0 ? Math.max(0, minX - padding) : (minX < 0 ? minX - padding : 0);
+  const xDomainMax = maxX + padding;
+  const x = d3.scaleLinear()
+    .domain([xDomainMin, xDomainMax])
+    .range([0, width]);
+  
+  // Calculate offset: if minX < 0, position y-axis at x=0; if minX > 0, y-axis at left edge
+  const xOffset = minX < 0 ? x(0) : 0;
+  
+  const y = d3.scaleLinear()
+    .domain([0, 100])
+    .range([height, 0]);
+  
+  // Bars with interactions
+  const barWidth = width / data.length;
+  g.selectAll('.bar')
+    .data(data)
+    .enter().append('rect')
+    .attr('class', 'bar')
+    .attr('x', d => x(d.distance) - barWidth / 2)
+    .attr('y', d => y(d.density))
+    .attr('width', barWidth - 2)
+    .attr('height', d => height - y(d.density))
+    .attr('fill', d => d3.interpolateYlOrRd(d.density / 100))
+    .attr('stroke', '#00ffff')
+    .attr('stroke-width', 1)
+    .style('cursor', 'pointer')
+    .on('mouseover', function(event, d) {
+      d3.select(this)
+        .attr('stroke-width', 3)
+        .attr('stroke', '#00ffff');
+      tooltip.transition().duration(200).style('opacity', 1);
+      tooltip.html(`Distance: ${d.distance}m<br>Density: ${d.density}%`)
+        .style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mousemove', function(event) {
+      tooltip.style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mouseout', function() {
+      d3.select(this)
+        .attr('stroke-width', 1);
+      tooltip.transition().duration(200).style('opacity', 0);
+    });
+  
+  // Axes - adjust x-axis position if data exceeds 0
+  const xAxis = d3.axisBottom(x).ticks(7);
+  const yAxis = d3.axisLeft(y).ticks(5);
+  
+  g.append('g')
+    .attr('class', 'chart-axis')
+    .attr('transform', `translate(${xOffset},${height})`)
+    .call(xAxis)
+    .selectAll('text')
+    .attr('class', 'chart-axis-label');
+  
+  g.append('g')
+    .attr('class', 'chart-axis')
+    .attr('transform', `translate(${xOffset},0)`)
+    .call(yAxis)
+    .selectAll('text')
+    .attr('class', 'chart-axis-label');
+  
+  g.append('text')
+    .attr('class', 'chart-axis-label')
+    .attr('transform', `rotate(-90) translate(${-height / 2},${-35 - xOffset})`)
+    .text('Density (%)');
+}
+
+// Pressure Survival Chart
+function renderPressureSurvivalChart(g, data, width, height) {
+  const tooltip = g.tooltip;
+  const minX = d3.min(data, d => d.pressure);
+  const maxX = d3.max(data, d => d.pressure);
+  
+  // Adjust domain: if minX > 0, start from minX (not 0) to better utilize chart space
+  // Add small padding to prevent axis overflow
+  const padding = (maxX - minX) * 0.05;
+  const xDomainMin = minX > 0 ? Math.max(0, minX - padding) : (minX < 0 ? minX - padding : 0);
+  const xDomainMax = maxX + padding;
+  const x = d3.scaleLinear()
+    .domain([xDomainMin, xDomainMax])
+    .range([0, width]);
+  
+  // Calculate offset: if minX < 0, position y-axis at x=0; if minX > 0, y-axis at left edge
+  const xOffset = minX < 0 ? x(0) : 0;
+  
+  const y = d3.scaleLinear()
+    .domain([0, 100])
+    .range([height, 0]);
+  
+  // Area
+  const area = d3.area()
+    .x(d => x(d.pressure))
+    .y0(height)
+    .y1(d => y(d.survival))
+    .curve(d3.curveMonotoneX);
+  
+  g.append('path')
+    .datum(data)
+    .attr('fill', 'rgba(128, 0, 255, 0.3)')
+    .attr('stroke', '#8000ff')
+    .attr('stroke-width', 2)
+    .attr('d', area)
+    .style('cursor', 'pointer')
+    .on('mouseover', function() {
+      d3.select(this).attr('stroke-width', 4);
+    })
+    .on('mouseout', function() {
+      d3.select(this).attr('stroke-width', 2);
+    });
+  
+  // Line
+  const line = d3.line()
+    .x(d => x(d.pressure))
+    .y(d => y(d.survival))
+    .curve(d3.curveMonotoneX);
+  
+  g.append('path')
+    .datum(data)
+    .attr('fill', 'none')
+    .attr('stroke', '#8000ff')
+    .attr('stroke-width', 3)
+    .attr('d', line)
+    .style('cursor', 'pointer');
+  
+  // Interactive dots
+  g.selectAll('.dot')
+    .data(data)
+    .enter().append('circle')
+    .attr('class', 'dot')
+    .attr('cx', d => x(d.pressure))
+    .attr('cy', d => y(d.survival))
+    .attr('r', 4)
+    .attr('fill', '#8000ff')
+    .attr('stroke', '#fff')
+    .attr('stroke-width', 2)
+    .style('cursor', 'pointer')
+    .on('mouseover', function(event, d) {
+      d3.select(this)
+        .attr('r', 7)
+        .attr('fill', '#8000ff')
+        .attr('stroke-width', 3);
+      tooltip.transition().duration(200).style('opacity', 1);
+      tooltip.html(`Pressure: ${d.pressure}atm<br>Survival Rate: ${d.survival}%`)
+        .style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mousemove', function(event) {
+      tooltip.style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mouseout', function() {
+      d3.select(this)
+        .attr('r', 4)
+        .attr('stroke-width', 2);
+      tooltip.transition().duration(200).style('opacity', 0);
+    });
+  
+  // Axes - adjust x-axis position if data exceeds 0
+  const xAxis = d3.axisBottom(x).ticks(8);
+  const yAxis = d3.axisLeft(y).ticks(5);
+  
+  g.append('g')
+    .attr('class', 'chart-axis')
+    .attr('transform', `translate(${xOffset},${height})`)
+    .call(xAxis)
+    .selectAll('text')
+    .attr('class', 'chart-axis-label');
+  
+  g.append('g')
+    .attr('class', 'chart-axis')
+    .attr('transform', `translate(${xOffset},0)`)
+    .call(yAxis)
+    .selectAll('text')
+    .attr('class', 'chart-axis-label');
+  
+  g.append('text')
+    .attr('class', 'chart-axis-label')
+    .attr('transform', `rotate(-90) translate(${-height / 2},${-35 - xOffset})`)
+    .text('Survival Rate (%)');
+}
+
+// Extreme Conditions Chart
+function renderExtremeConditionsChart(g, data, width, height) {
+  const tooltip = g.tooltip;
+  const x = d3.scaleBand()
+    .domain(data.map(d => d.condition))
+    .range([0, width])
+    .padding(0.2);
+  
+  const y = d3.scaleLinear()
+    .domain([0, 100])
+    .range([height, 0]);
+  
+  // Bars with interactions
+  g.selectAll('.bar')
+    .data(data)
+    .enter().append('rect')
+    .attr('class', 'bar')
+    .attr('x', d => x(d.condition))
+    .attr('y', d => y(d.value))
+    .attr('width', x.bandwidth())
+    .attr('height', d => height - y(d.value))
+    .attr('fill', d => d3.interpolateViridis(d.value / 100))
+    .attr('stroke', '#00ffff')
+    .attr('stroke-width', 1)
+    .style('cursor', 'pointer')
+    .on('mouseover', function(event, d) {
+      d3.select(this)
+        .attr('stroke-width', 3)
+        .attr('stroke', '#00ffff');
+      tooltip.transition().duration(200).style('opacity', 1);
+      tooltip.html(`${d.condition}<br>Adaptation Capability: ${d.value}%`)
+        .style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mousemove', function(event) {
+      tooltip.style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mouseout', function() {
+      d3.select(this)
+        .attr('stroke-width', 1);
+      tooltip.transition().duration(200).style('opacity', 0);
+    });
+  
+  // Axes
+  const xAxis = d3.axisBottom(x);
+  const yAxis = d3.axisLeft(y).ticks(5);
+  
+  g.append('g')
+    .attr('class', 'chart-axis')
+    .attr('transform', `translate(0,${height})`)
+    .call(xAxis)
+    .selectAll('text')
+    .attr('class', 'chart-axis-label')
+    .attr('transform', 'rotate(-45)')
+    .attr('text-anchor', 'end')
+    .attr('dx', '-0.5em')
+    .attr('dy', '0.5em');
+  
+  g.append('g')
+    .attr('class', 'chart-axis')
+    .call(yAxis)
+    .selectAll('text')
+    .attr('class', 'chart-axis-label');
+  
+  g.append('text')
+    .attr('class', 'chart-axis-label')
+    .attr('transform', 'rotate(-90)')
+    .attr('y', -35)
+    .attr('x', -height / 2)
+    .text('Adaptation Capability (%)');
+}
+
+// Donut Chart
+function renderDonutChart(g, data, width, height) {
+  const tooltip = g.tooltip;
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const outerRadius = Math.min(width, height) / 2 - 40;
+  const innerRadius = outerRadius * 0.5; // Donut hole
+  
+  // Color scale
+  const colorScale = d3.scaleOrdinal()
+    .domain(data.map(d => d.category))
+    .range(d3.schemeCategory10);
+  
+  // Calculate total for percentages
+  const total = d3.sum(data, d => d.value);
+  
+  // Create pie generator
+  const pie = d3.pie()
+    .value(d => d.value)
+    .sort(null)
+    .padAngle(0.01);
+  
+  // Create arc generator
+  const arc = d3.arc()
+    .innerRadius(innerRadius)
+    .outerRadius(outerRadius);
+  
+  // Create arcs
+  const arcs = g.selectAll('.arc')
+    .data(pie(data))
+    .enter().append('g')
+    .attr('class', 'arc')
+    .attr('transform', `translate(${centerX},${centerY})`);
+  
+  // Draw arcs
+  arcs.append('path')
+    .attr('d', arc)
+    .attr('fill', (d, i) => colorScale(data[i].category))
+    .attr('stroke', '#001122')
+    .attr('stroke-width', 2)
+    .style('cursor', 'pointer')
+    .on('mouseover', function(event, d) {
+      d3.select(this)
+        .attr('stroke', '#00ffff')
+        .attr('stroke-width', 3)
+        .transition()
+        .duration(200)
+        .attr('transform', 'scale(1.05)');
+      
+      const percentage = ((d.data.value / total) * 100).toFixed(1);
+      tooltip.transition().duration(200).style('opacity', 1);
+      tooltip.html(`${d.data.category}<br>Quantity: ${d.data.value}%<br>Proportion: ${percentage}%`)
+        .style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mousemove', function(event) {
+      tooltip.style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mouseout', function() {
+      d3.select(this)
+        .attr('stroke', '#001122')
+        .attr('stroke-width', 2)
+        .transition()
+        .duration(200)
+        .attr('transform', 'scale(1)');
+      tooltip.transition().duration(200).style('opacity', 0);
+    });
+  
+  // Add legend
+  const legend = g.append('g')
+    .attr('class', 'legend')
+    .attr('transform', `translate(${width - 150}, 20)`);
+  
+  const legendItems = legend.selectAll('.legend-item')
+    .data(data)
+    .enter().append('g')
+    .attr('class', 'legend-item')
+    .attr('transform', (d, i) => `translate(0, ${i * 20})`);
+  
+  legendItems.append('rect')
+    .attr('width', 12)
+    .attr('height', 12)
+    .attr('fill', (d, i) => colorScale(data[i].category))
+    .attr('stroke', '#00ffff')
+    .attr('stroke-width', 1);
+  
+  legendItems.append('text')
+    .attr('x', 18)
+    .attr('y', 9)
+    .attr('class', 'chart-axis-label')
+    .attr('font-size', '10px')
+    .text(d => d.category);
+}
+
+// Add click listeners to all creature items
+document.addEventListener('DOMContentLoaded', () => {
+  const creatureItems = document.querySelectorAll('.creature-item');
+  creatureItems.forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const creatureName = item.getAttribute('data-name');
+      if (creatureName) {
+        showCreatureModal(creatureName);
+      }
+    });
+    
+    // Add cursor pointer to indicate clickability
+    item.style.cursor = 'pointer';
+  });
+  
+  console.log('Creature modal system initialized. Found', creatureItems.length, 'creature items.');
+});
+</script>
+
+</body>
+</html>
