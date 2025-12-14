@@ -3113,7 +3113,7 @@ class OceanGame {
     this.bombSpawnTimer++;
     if (this.bombSpawnTimer >= this.bombSpawnInterval) {
       // Spawn multiple bombs at higher scores
-      const bombCount = Math.min(1 + Math.floor(this.score / 50), 3); // Max 3 bombs at once
+      const bombCount = Math.min(1 + Math.floor(this.score / 50), 1); // Max 1 bombs at once
       for (let i = 0; i < bombCount; i++) {
         this.spawnBomb();
       }
@@ -5582,4 +5582,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
