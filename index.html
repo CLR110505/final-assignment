@@ -503,7 +503,7 @@ input[type="range"]::-moz-range-thumb:hover {
   align-items: center;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: creature-enter 0.8s ease-out backwards;
+  animation: creatureEnter 0.8s ease-out backwards;
 }
 
 .creature-item:nth-child(1) { animation-delay: 0.1s; }
@@ -583,7 +583,7 @@ input[type="range"]::-moz-range-thumb:hover {
   opacity: 1;
 }
 
-@keyframes creature-enter {
+@keyframes creatureEnter {
   0% {
     opacity: 0;
     transform: translateY(30px) scale(0.8);
