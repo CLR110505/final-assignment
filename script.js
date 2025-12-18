@@ -99,7 +99,6 @@ class OceanExplorer {
         this.sections = ["intro", "overview", "gallery", "zones", "deepsea", "quiz", "about"];
         this.currentSectionIndex = 0;
         this.audioSystem = new AudioSystem();
-        this.quizSystem = new QuizSystem();
         this.deepSeaSystem = new DeepSeaSystem();
         this.zoneSystem = new ZoneSystem();
 
@@ -114,7 +113,6 @@ class OceanExplorer {
         this.setupAudioToggle();
         this.setupKeyboardNavigation();
         this.setupTouchNavigation();
-        this.quizSystem.init();
         this.deepSeaSystem.init();
         this.zoneSystem.init();
         this.updateNavigation();
@@ -263,8 +261,6 @@ class OceanExplorer {
 }
 
 // ===== AUDIO SYSTEM =====
-
-// ===== AUDIO SYSTEM =====
 class AudioSystem {
   constructor() {
     this.audioContext = null;
@@ -318,216 +314,6 @@ class AudioSystem {
   playDeepSeaSound() {
     this.createOscillator(80 + Math.random() * 40, 'sawtooth', 1.5);
   }
-}
-
-// ===== QUIZ SYSTEM =====
-class QuizSystem {
-    constructor() {
-        this.questions = [
-  {
-    question: "Which marine mammal is critically endangered with fewer than 10 individuals remaining?",
-    answers: ["Blue Whale", "Vaquita", "Great White Shark", "Giant Pacific Octopus"],
-    correct: 1,
-    explanation: "The vaquita is the world's most endangered marine mammal, with only about 10 individuals left due to gillnet fishing."
-  },
-  {
-    question: "Which creature can change color in less than 1 second?",
-    answers: ["Great White Shark", "Giant Pacific Octopus", "Blue Whale", "Hawksbill Sea Turtle"],
-    correct: 1,
-    explanation: "The giant Pacific octopus can change color instantly to camouflage itself from predators and prey."
-  },
-  {
-    question: "What is the largest animal ever known to exist?",
-    answers: ["Giant Squid", "Great White Shark", "Blue Whale", "Giant Pacific Octopus"],
-    correct: 2,
-    explanation: "The blue whale is the largest animal ever known to exist, weighing up to 190 tons and measuring up to 30 meters."
-  },
-  {
-    question: "Which sea turtle species is critically endangered due to illegal trade in its shell?",
-    answers: ["All sea turtles", "Hawksbill Sea Turtle", "Green Sea Turtle", "Loggerhead Sea Turtle"],
-    correct: 1,
-    explanation: "Hawksbill sea turtles are critically endangered because their beautiful shell (bekko) is highly valued in jewelry making."
-  },
-  {
-    question: "Which creature has eyes that are the largest in the animal kingdom?",
-    answers: ["Great White Shark", "Giant Squid", "Blue Whale", "Vaquita"],
-    correct: 1,
-    explanation: "Giant squids have eyes up to 25cm in diameter - the largest eyes of any animal, adapted for detecting bioluminescent prey in the deep ocean."
-  },
-  {
-    question: "Which ocean zone is known as the 'midnight zone' with no sunlight?",
-    answers: ["Epipelagic", "Mesopelagic", "Bathypelagic", "Abyssopelagic"],
-    correct: 2,
-    explanation: "The bathypelagic zone (1,000-4,000m) is called the midnight zone because no sunlight penetrates this deep."
-  },
-  {
-    question: "How many hearts does an octopus have?",
-    answers: ["1", "2", "3", "4"],
-    correct: 2,
-    explanation: "Octopuses have three hearts - two pump blood through the gills, and one pumps blood through the rest of the body."
-  },
-  {
-    question: "Which creature can detect blood in water from 5km away?",
-    answers: ["Giant Squid", "Great White Shark", "Blue Whale", "Vaquita"],
-    correct: 1,
-    explanation: "Great white sharks have an incredible sense of smell and can detect a single drop of blood in 25 gallons of water from up to 5km away."
-  },
-  {
-    question: "What zone of the ocean do most familiar sea creatures live in?",
-    answers: ["Abyssopelagic", "Bathypelagic", "Mesopelagic", "Epipelagic"],
-    correct: 3,
-    explanation: "The epipelagic zone (0-200m) is where most familiar sea creatures live, as it receives enough sunlight for photosynthesis and marine life."
-  },
-  {
-    question: "Which marine mammal can dive deeper than 1,000 meters?",
-    answers: ["Vaquita", "Blue Whale", "Great White Shark", "Hawksbill Sea Turtle"],
-    correct: 1,
-    explanation: "Blue whales can dive to depths of over 500 meters, and some individuals have been recorded diving as deep as 1,000+ meters."
-  }
-];
-
-        this.currentQuestionIndex = 0;
-        this.score = 0;
-        this.quizActive = false;
-    }
-
-    init() {
-        const startQuizBtn = document.getElementById('start-quiz');
-        const nextQuestionBtn = document.getElementById('next-question');
-        const restartQuizBtn = document.getElementById('restart-quiz');
-
-        startQuizBtn.addEventListener('click', () => this.startQuiz());
-        nextQuestionBtn.addEventListener('click', () => this.nextQuestion());
-        restartQuizBtn.addEventListener('click', () => this.restartQuiz());
-
-  // Audio context resume on first interaction
-  document.addEventListener('click', () => {
-            if (oceanExplorer.audioSystem.audioContext && oceanExplorer.audioSystem.audioContext.state === 'suspended') {
-                oceanExplorer.audioSystem.audioContext.resume();
-            }
-        });
-    }
-
-    startQuiz() {
-        this.currentQuestionIndex = 0;
-        this.score = 0;
-        this.quizActive = true;
-        this.showQuestion();
-
-  const startQuizBtn = document.getElementById('start-quiz');
-  const quizScore = document.getElementById('quiz-score');
-    startQuizBtn.style.display = 'none';
-    quizScore.style.display = 'none';
-  }
-
-    showQuestion() {
-        const question = this.questions[this.currentQuestionIndex];
-        const questionText = document.getElementById('question-text');
-        const quizAnswers = document.getElementById('quiz-answers');
-
-    questionText.textContent = question.question;
-
-    quizAnswers.innerHTML = '';
-    question.answers.forEach((answer, index) => {
-      const answerDiv = document.createElement('div');
-      answerDiv.className = 'quiz-answer';
-      answerDiv.textContent = answer;
-      answerDiv.dataset.index = index;
-            answerDiv.addEventListener('click', (e) => this.selectAnswer(e));
-      quizAnswers.appendChild(answerDiv);
-    });
-
-        const nextQuestionBtn = document.getElementById('next-question');
-    nextQuestionBtn.style.display = 'none';
-  }
-
-    selectAnswer(e) {
-        if (!this.quizActive) return;
-
-    const selectedIndex = parseInt(e.target.dataset.index);
-        const question = this.questions[this.currentQuestionIndex];
-    const answers = document.querySelectorAll('.quiz-answer');
-
-        this.quizActive = false;
-
-    // Show correct/incorrect
-    answers.forEach((answer, index) => {
-      if (index === question.correct) {
-        answer.classList.add('correct');
-      } else if (index === selectedIndex && index !== question.correct) {
-        answer.classList.add('incorrect');
-      }
-    });
-
-    if (selectedIndex === question.correct) {
-            this.score++;
-    }
-
-    // Show explanation
-    setTimeout(() => {
-            const questionText = document.getElementById('question-text');
-            const nextQuestionBtn = document.getElementById('next-question');
-      questionText.innerHTML = `<strong>Answer:</strong> ${question.answers[question.correct]}<br><br><em>${question.explanation}</em>`;
-      nextQuestionBtn.style.display = 'inline-block';
-    }, 1500);
-  }
-
-    nextQuestion() {
-        this.currentQuestionIndex++;
-        if (this.currentQuestionIndex < this.questions.length) {
-            this.showQuestion();
-            this.quizActive = true;
-    } else {
-            this.showQuizResults();
-        }
-    }
-
-    showQuizResults() {
-        const quizQuestion = document.getElementById('quiz-question');
-        const quizAnswers = document.getElementById('quiz-answers');
-        const nextQuestionBtn = document.getElementById('next-question');
-        const quizScore = document.getElementById('quiz-score');
-        const restartQuizBtn = document.getElementById('restart-quiz');
-        const scoreValue = document.getElementById('score-value');
-        const scoreFeedback = document.getElementById('score-feedback');
-
-    quizQuestion.style.display = 'none';
-    quizAnswers.style.display = 'none';
-    nextQuestionBtn.style.display = 'none';
-    quizScore.style.display = 'block';
-    restartQuizBtn.style.display = 'inline-block';
-
-        scoreValue.textContent = `${this.score}/${this.questions.length}`;
-
-    let feedback = '';
-        if (this.score >= 9) {
-      feedback = '🏆 Excellent! You\'re a marine life expert!';
-        } else if (this.score >= 7) {
-      feedback = '🌊 Great job! You know your sea creatures well!';
-        } else if (this.score >= 5) {
-      feedback = '🐠 Good effort! Keep learning about ocean life!';
-    } else {
-      feedback = '🐟 Keep exploring! There\'s so much more to learn about marine life!';
-    }
-    scoreFeedback.textContent = feedback;
-  }
-
-    restartQuiz() {
-        const quizQuestion = document.getElementById('quiz-question');
-        const quizAnswers = document.getElementById('quiz-answers');
-        const quizScore = document.getElementById('quiz-score');
-        const restartQuizBtn = document.getElementById('restart-quiz');
-        const startQuizBtn = document.getElementById('start-quiz');
-
-    quizQuestion.style.display = 'block';
-    quizAnswers.style.display = 'grid';
-    quizScore.style.display = 'none';
-    restartQuizBtn.style.display = 'none';
-    startQuizBtn.style.display = 'inline-block';
-        this.currentQuestionIndex = 0;
-        this.score = 0;
-        this.quizActive = false;
-    }
 }
 
 // ===== DEEP SEA SYSTEM =====
@@ -841,9 +627,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Debug: Check if creatures are found
         const creatures = document.querySelectorAll('.creature-item');
         console.log('Found creature-items:', creatures.length);
-            creatures.forEach(c => {
-                console.log('Creature:', c.dataset.name);
-            });
-        }
+        creatures.forEach(c => {
+            console.log('Creature:', c.dataset.name);
+        });
     }, 500);
 });
